@@ -1,0 +1,33 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>pdf text</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+</head><body>
+<pre id="out">loading…</pre>
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+window.extract = async function(url, from, to){
+  const pdf = await pdfjsLib.getDocument(url).promise;
+  const n = pdf.numPages; let out = "PAGES " + n + "\n";
+  for(let p = from || 1; p <= Math.min(to || n, n); p++){
+    const page = await pdf.getPage(p);
+    const tc = await page.getTextContent();
+    // группируем по строкам (координата y)
+    const rows = {};
+    tc.items.forEach(it => { const y = Math.round(it.transform[5]); (rows[y] = rows[y] || []).push({x: it.transform[4], s: it.str}); });
+    const ys = Object.keys(rows).map(Number).sort((a,b)=>b-a);
+    out += "\n===== PAGE " + p + " =====\n" + ys.map(y => rows[y].sort((a,b)=>a.x-b.x).map(r=>r.s).join(" | ")).join("\n");
+  }
+  return out;
+};
+window.render = async function(url, p, scale){
+  const pdf = await pdfjsLib.getDocument(url).promise;
+  const page = await pdf.getPage(p);
+  const vp = page.getViewport({scale: scale || 1.5});
+  const c = document.createElement("canvas"); c.width = vp.width; c.height = vp.height;
+  document.body.innerHTML = ""; document.body.appendChild(c);
+  await page.render({canvasContext: c.getContext("2d"), viewport: vp}).promise;
+  return [vp.width, vp.height, pdf.numPages];
+};
+document.getElementById("out").textContent = "ready";
+</script><script src="extract.js"></script>
+</body></html>

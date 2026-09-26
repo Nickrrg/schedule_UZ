@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><title>Smoke-тесты</title>
+<style>
+  body{font:14px/1.4 system-ui,sans-serif;margin:16px;}
+  table{border-collapse:collapse;margin-top:8px;} td{border-bottom:1px solid #ddd;padding:4px 8px;vertical-align:top;}
+  tr.ok td:first-child{color:#2E9E5B;font-weight:600;} tr.bad td:first-child{color:#E5484D;font-weight:600;}
+  iframe{width:100%;height:420px;border:1px solid #ccc;margin-top:12px;}
+</style></head>
+<body>
+<h1>Сквозные проверки index.html</h1>
+<p>Запуск: из корня проекта <code>py tools/npa/devserver.py</code> (или любой статический сервер), затем открыть <code>http://localhost:8766/tests/browser/smoke.html</code> и нажать кнопку. Тесты очищают данные страницы на этом адресе.</p>
+<button onclick="runSmoke()">Запустить</button>
+<div id="out"></div>
+<iframe id="app" src="about:blank"></iframe>
+<script src="smoke.js"></script>
+</body></html>
