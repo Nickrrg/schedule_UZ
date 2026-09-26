@@ -81,6 +81,8 @@ th{background:var(--surface-2);font-weight:600;font-size:.78rem;color:var(--ink-
 .muted{color:var(--ink-soft);font-size:.82rem;}
 .warn-box{background:var(--danger-bg);color:var(--danger);border-radius:12px;padding:12px 16px;font-size:.86rem;margin-bottom:16px;}
 .ok-box{background:var(--ok-bg);color:var(--ok);border-radius:12px;padding:12px 16px;font-size:.86rem;margin-bottom:16px;}
+.note-box{background:var(--accent-soft);color:var(--ink);border-radius:12px;padding:12px 16px;font-size:.86rem;margin-bottom:16px;}
+.issue-link{color:var(--accent);font-weight:600;text-decoration:none;white-space:nowrap;margin-left:6px;}
 .sched-select{width:100%;min-width:130px;font-size:.78rem;padding:6px 8px;min-height:34px;}
 td.conflict{background:var(--danger-bg);}
 .tabs-inline{display:flex;gap:8px;margin-bottom:16px;overflow-x:auto;padding-bottom:4px;}
@@ -384,6 +386,14 @@ var UZ_TR = {
 "Тема: тёмная": "Mavzu: qorongʻi",
 "Тема: системная": "Mavzu: tizim",
 "\" title=\"Вариант предмета\">": "\" title=\"Fan varianti\">",
+"Ни у одного класса нет учебного плана — заполните его на шаге «Учебный план».": "Hech bir sinfda oʻquv rejasi yoʻq — uni «Oʻquv rejasi» bosqichida toʻldiring.",
+"Без учебного плана, в расписание не попадут: ": "Oʻquv rejasi yoʻq, jadvalga kirmaydi: ",
+"Учителей нет — расписание строится без учителей, их занятость не проверяется. Добавьте учителей и составьте расписание заново.": "Oʻqituvchilar yoʻq — jadval oʻqituvchilarsiz tuziladi, ularning bandligi tekshirilmaydi. Oʻqituvchilarni qoʻshing va jadvalni qaytadan tuzing.",
+"Предметов в учебных планах без учителя: ": "Oʻquv rejalaridagi oʻqituvchisiz fanlar: ",
+" — для них занятость учителя не проверяется. Назначьте учителей в учебном плане.": " — ular uchun oʻqituvchi bandligi tekshirilmaydi. Oʻquv rejasida oʻqituvchilarni biriktiring.",
+"Исправить →": "Tuzatish →",
+"Обратите внимание:": "Eʼtibor bering:",
+"Учителей нет — добавьте их на шаге «Учителя» и назначьте в учебном плане.": "Oʻqituvchilar yoʻq — ularni «Oʻqituvchilar» bosqichida qoʻshing va oʻquv rejasida biriktiring.",
 "Ошибка: ": "Xatolik: "
 };
 function uzt(s){ if(uiLang !== "uz") return s; var v = UZ_TR[s]; return v === undefined ? s : v; }
@@ -419,7 +429,7 @@ function applyLangConstants(){
    загрузится (CSP), события копятся в памяти — window.__ttEvents для отладки.
    На своём домене с заполненным ID события уходят как JS-цели "tt_<имя>". */
 var METRIKA_COUNTER_ID = null;
-var APP_VERSION = "0.6";
+var APP_VERSION = "0.6.1";
 var trackQueue = [];
 (function loadMetrika(){
   if(!METRIKA_COUNTER_ID) return;
@@ -799,7 +809,8 @@ function computeUnits(classId){
     var members = [{ subjectId: subjId, teacherId: entry.teacherId }];
     processed[subjId] = true;
     var partnerId = entry.syncWith;
-    if(partnerId && plan[partnerId] && plan[partnerId].hours>0 && plan[partnerId].teacherId && !processed[partnerId]){
+    // партнёр без учителя остаётся в паре: группы всегда в одном слоте, даже если учитель ещё не назначен
+    if(partnerId && plan[partnerId] && plan[partnerId].hours>0 && !processed[partnerId]){
       members.push({ subjectId: partnerId, teacherId: plan[partnerId].teacherId });
       processed[partnerId] = true;
     }
@@ -1305,10 +1316,16 @@ function tplSchedule(){
   var html = '<h1 class="page-title">'+t('title_schedule')+'</h1>';
   html += uzt('<p class="page-sub">Автоматическая расстановка уроков с проверкой конфликтов учителей и соответствия учебному плану. Ячейки можно поправить вручную.</p>');
 
-  var errs = validateBeforeGenerate();
+  var issues = generationIssues();
+  var errs = issues.errors;
   if(errs.length){
     html += uzt('<div class="warn-box"><strong>Прежде чем генерировать расписание, исправьте:</strong><ul style="margin:6px 0 0 18px; padding:0;">');
-    errs.forEach(function(e){ html += '<li>'+escHtml(e)+'</li>'; });
+    html += issueListHtml(errs);
+    html += '</ul></div>';
+  }
+  if(issues.warnings.length){
+    html += '<div class="note-box"><strong>'+escHtml(uzt("Обратите внимание:"))+'</strong><ul style="margin:6px 0 0 18px; padding:0;">';
+    html += issueListHtml(issues.warnings);
     html += '</ul></div>';
   }
 
@@ -1331,7 +1348,8 @@ function tplSchedule(){
     html += '</ul></div>';
   }
 
-  if(!scheduleViewClassId || !byId(state.classes, scheduleViewClassId)) scheduleViewClassId = state.classes[0].id;
+  // "__teachers__" — не класс, а вид «По учителям»; его нельзя сбрасывать на первый класс
+  if(!scheduleViewClassId || (scheduleViewClassId !== "__teachers__" && !byId(state.classes, scheduleViewClassId))) scheduleViewClassId = state.classes[0].id;
 
   html += '<div class="tabs-inline">';
   state.classes.forEach(function(c){
@@ -1403,6 +1421,9 @@ function renderClassScheduleView(classId){
 function renderTeacherScheduleView(){
   var days = DAY_NAMES_6;
   var html = '';
+  if(!state.teachers.length){
+    return '<div class="card"><p class="muted">'+escHtml(uzt("Учителей нет — добавьте их на шаге «Учителя» и назначьте в учебном плане."))+'</p></div>';
+  }
   state.teachers.forEach(function(t){
     html += '<div class="card"><h2>'+escHtml(t.name)+'</h2>';
     html += uzt('<div class="table-wrap"><table><thead><tr><th>Слот</th>');
@@ -1497,38 +1518,55 @@ function escHtml(s){ return String(s).replace(/[&<>]/g, function(c){ return {"&"
 function escAttr(s){ return escHtml(s).replace(/"/g,"&quot;"); }
 
 /* ---------------- validation ---------------- */
-function validateBeforeGenerate(){
-  var errs = [];
-  if(!state.classes.length) errs.push(uzt("Нет ни одного класса."));
-  if(!state.subjects.length) errs.push(uzt("Нет ни одного предмета."));
-  if(!state.teachers.length) errs.push(uzt("Нет ни одного учителя."));
+/* Проверки перед генерацией. errors — генерация невозможна; warnings — генерация
+   возможна, но результат будет неполным или без проверки занятости учителей.
+   У каждой проблемы есть шаг мастера (и класс), где её исправлять: туда ведут
+   ссылки на вкладке «Расписание» и кнопки бота. */
+function generationIssues(){
+  var errors = [], warnings = [];
+  function add(list, text, tab, classId){
+    if(!list.some(function(x){ return x.text === text; })) list.push({ text: text, tab: tab, classId: classId || null });
+  }
+  if(!state.classes.length) add(errors, uzt("Нет ни одного класса."), "classes");
+  if(!state.subjects.length) add(errors, uzt("Нет ни одного предмета."), "subjects");
 
-  var neededRoomTypes = {};
+  var neededRoomTypes = {}, emptyClasses = [], anyPlan = false, noTeacherCount = 0, firstNoTeacherClass = null;
   state.classes.forEach(function(c){
     var plan = state.curriculum[c.id] || {};
     var any = false;
     Object.keys(plan).forEach(function(subjId){
       var e = plan[subjId];
-      if(e.hours > 0){
-        any = true;
-        var subj = byId(state.subjects, subjId);
-        if(subj && subj.roomType) neededRoomTypes[subj.roomType] = true;
-        if(e.syncWith && plan[e.syncWith]){
-          var partner = plan[e.syncWith];
-          if(partner.hours !== e.hours){
-            errs.push(uzt('Класс ')+c.name+uzt(': групповой урок «')+subjectName(subjId)+uzt('» и «')+subjectName(e.syncWith)+uzt('» — разное число часов (')+e.hours+uzt(' и ')+partner.hours+uzt('), должно совпадать.'));
-          }
-        }
+      if(!(e.hours > 0)) return;
+      any = true;
+      if(!e.teacherId){ noTeacherCount++; if(!firstNoTeacherClass) firstNoTeacherClass = c.id; }
+      var subj = byId(state.subjects, subjId);
+      if(subj && subj.roomType) neededRoomTypes[subj.roomType] = true;
+      if(e.syncWith && plan[e.syncWith] && plan[e.syncWith].hours !== e.hours){
+        add(errors, uzt('Класс ')+c.name+uzt(': групповой урок «')+subjectName(subjId)+uzt('» и «')+subjectName(e.syncWith)+uzt('» — разное число часов (')+e.hours+uzt(' и ')+plan[e.syncWith].hours+uzt('), должно совпадать.'), "curriculum", c.id);
       }
     });
-    if(!any) errs.push(uzt('Класс ')+c.name+uzt(': учебный план пуст (нигде не указаны часы).'));
+    if(any) anyPlan = true; else emptyClasses.push(c);
   });
+  // классы без плана не блокируют всю школу — они просто не попадут в расписание
+  if(state.classes.length && !anyPlan){
+    add(errors, uzt("Ни у одного класса нет учебного плана — заполните его на шаге «Учебный план»."), "curriculum", state.classes[0].id);
+  } else if(emptyClasses.length){
+    add(warnings, uzt("Без учебного плана, в расписание не попадут: ")+emptyClasses.map(function(c){ return c.name; }).join(", ")+".", "curriculum", emptyClasses[0].id);
+  }
 
   if(state.rooms.length){
     Object.keys(neededRoomTypes).forEach(function(rt){
-      var has = state.rooms.some(function(r){ return r.type === rt; });
-      if(!has) errs.push(uzt('Ни одного кабинета с типом «')+rt+uzt('» не заведено, а он нужен по крайней мере одному предмету.'));
+      if(!state.rooms.some(function(r){ return r.type === rt; })){
+        add(errors, uzt('Ни одного кабинета с типом «')+rt+uzt('» не заведено, а он нужен по крайней мере одному предмету.'), "rooms");
+      }
     });
+  }
+
+  // без учителей расписание строится (как черновик) — проверяются только классы и кабинеты
+  if(!state.teachers.length){
+    add(warnings, uzt("Учителей нет — расписание строится без учителей, их занятость не проверяется. Добавьте учителей и составьте расписание заново."), "teachers");
+  } else if(noTeacherCount){
+    add(warnings, uzt("Предметов в учебных планах без учителя: ")+noTeacherCount+uzt(" — для них занятость учителя не проверяется. Назначьте учителей в учебном плане."), "curriculum", firstNoTeacherClass);
   }
 
   var teacherLoad = {};
@@ -1543,11 +1581,23 @@ function validateBeforeGenerate(){
     var cap = t.maxPerDay * 6; // безопасная верхняя граница — учитель может вести и 6-дневные классы
     var load = teacherLoad[t.id] || 0;
     if(load > cap){
-      errs.push(uzt('Учитель ')+t.name+uzt(': назначено ')+load+uzt('ч/нед при максимуме ')+cap+uzt('ч (')+t.maxPerDay+uzt('×6 дн.) — не хватит слотов.'));
+      add(warnings, uzt('Учитель ')+t.name+uzt(': назначено ')+load+uzt('ч/нед при максимуме ')+cap+uzt('ч (')+t.maxPerDay+uzt('×6 дн.) — не хватит слотов.'), "teachers");
     }
   });
 
-  return dedupe(errs);
+  return { errors: errors, warnings: warnings };
+}
+function validateBeforeGenerate(){ return generationIssues().errors.map(function(x){ return x.text; }); }
+/* Переход к месту, где исправляется проблема: шаг мастера и, если указан, класс. */
+function goToIssue(tab, classId){
+  activeTab = tab;
+  if(classId && tab === "curriculum") curriculumViewClassId = classId;
+  if(classId && tab === "schedule") scheduleViewClassId = classId;
+}
+function issueListHtml(list){
+  return list.map(function(x){
+    return '<li>'+escHtml(x.text)+' <a href="#" class="issue-link" data-act="goto-issue" data-tab="'+x.tab+'" data-id="'+(x.classId||"")+'">'+escHtml(uzt("Исправить →"))+'</a></li>';
+  }).join("");
 }
 function dedupe(arr){ var seen={}; return arr.filter(function(x){ if(seen[x]) return false; seen[x]=1; return true; }); }
 
@@ -2201,6 +2251,12 @@ function onClick(e){
     render();
   }
   else if(act==="sched-select-class"){ scheduleViewClassId = id; render(); }
+  else if(act==="goto-issue"){
+    e.preventDefault();
+    goToIssue(t.getAttribute("data-tab"), id || null);
+    render();
+    try{ document.getElementById("steps").scrollIntoView({ behavior: "smooth" }); }catch(x){}
+  }
   else if(act==="cell-lock"){
     var lkC = t.getAttribute("data-class"), lkD = parseInt(t.getAttribute("data-day"),10), lkP = parseInt(t.getAttribute("data-period"),10);
     var lkCell = state.schedule.byClass[lkC][lkD][lkP];
@@ -2540,7 +2596,10 @@ var BOT_T = {
     a_next: "Дальше", plan_done: "Заполнил учебный план для классов: {n}.",
     q_gen: "Составить расписание сейчас?", a_gen: "Составить", a_later: "Позже",
     gen_done: "Расписание составлено. Не поместилось уроков: {u}.",
-    gen_noteachers: "Учителя предметам ещё не назначены, поэтому их занятость пока не проверялась. Назначьте учителей на шаге «Учебный план» и нажмите «Сгенерировать расписание» ещё раз.",
+    gen_blocked: "Пока не могу составить расписание:\n{list}\nЯ открыл шаг мастера, где это исправляется. Исправьте и нажмите «Продолжить».",
+    gen_warn: "Обратите внимание:\n{list}",
+    q_review: "Что дальше? Можно поправить замечания в мастере и составить расписание заново — заблокированные (🔒) уроки останутся на месте.",
+    a_continue: "Продолжить", a_regen: "Составить заново", a_open_schedule: "Открыть расписание", a_finish: "Готово", go: "Открыть: {tab}",
     done: "Готово. Мастер ниже заполнен — проверьте и поправьте, что нужно.",
     a_collapse: "Свернуть бота", err: "Ошибка: {m}"
   },
@@ -2564,14 +2623,18 @@ var BOT_T = {
     a_next: "Davom etish", plan_done: "O'quv rejasi to'ldirilgan sinflar: {n}.",
     q_gen: "Dars jadvalini hozir tuzaymi?", a_gen: "Tuzish", a_later: "Keyinroq",
     gen_done: "Dars jadvali tuzildi. Joylashmagan darslar: {u}.",
-    gen_noteachers: "Fanlarga hali o'qituvchilar biriktirilmagan, shuning uchun ularning bandligi tekshirilmadi. «O'quv rejasi» bosqichida o'qituvchilarni biriktiring va «Dars jadvalini tuzish» tugmasini yana bosing.",
+    gen_blocked: "Hozircha dars jadvalini tuza olmayman:\n{list}\nBuni tuzatish mumkin boʻlgan bosqichni ochdim. Tuzating va «Davom etish» tugmasini bosing.",
+    gen_warn: "Eʼtibor bering:\n{list}",
+    q_review: "Keyin nima? Kamchiliklarni bosqichlarda tuzatib, jadvalni qaytadan tuzish mumkin — qulflangan (🔒) darslar joyida qoladi.",
+    a_continue: "Davom etish", a_regen: "Qaytadan tuzish", a_open_schedule: "Dars jadvalini ochish", a_finish: "Tayyor", go: "Ochish: {tab}",
     done: "Tayyor. Quyidagi bosqichlar to'ldirildi — tekshiring va kerakli joyini tuzating.",
     a_collapse: "Botni yig'ish", err: "Xatolik: {m}"
   }
 };
 function bt(k, vars){
   var s = (BOT_T[uiLang] && BOT_T[uiLang][k]) || BOT_T.ru[k] || k;
-  if(vars) Object.keys(vars).forEach(function(v){ s = s.split("{"+v+"}").join(String(vars[v])); });
+  // значение может быть {ru, uz} — текст, заранее собранный на обоих языках (история бота переводится при смене языка)
+  if(vars) Object.keys(vars).forEach(function(v){ var val = vars[v]; if(val && typeof val === "object") val = val[uiLang] || val.ru; s = s.split("{"+v+"}").join(String(val)); });
   return s;
 }
 var bot = { open: true, idx: -1, log: [] };
@@ -2603,6 +2666,38 @@ function botAddTeachers(rows){
   return n;
 }
 function numOpts(from, to){ var a = []; for(var i=from; i<=to; i++) a.push([String(i), String(i)]); return a; }
+/* Составление расписания из бота: те же проверки, что у кнопки в мастере.
+   При ошибке бот не идёт дальше, а открывает шаг мастера, где её исправить. */
+function issueTextsBothLangs(kind){
+  return inBothLangs(function(){ return generationIssues()[kind].map(function(x){ return "• "+x.text; }).join("\n"); });
+}
+function botIssueOptions(list){
+  var seen = {}, out = [];
+  list.forEach(function(x){
+    var key = x.tab + (x.classId ? ":"+x.classId : "");
+    if(seen[key]) return;
+    seen[key] = true;
+    var label = t("nav_"+x.tab) + (x.classId ? " — "+className(x.classId) : "");
+    out.push(["go:"+key, bt("go", {tab: label})]);
+  });
+  return out;
+}
+function botRunGenerate(){
+  var issues = generationIssues();
+  if(issues.errors.length){
+    bot.genBlocked = true;
+    bot.log.push({ who:"bot", key:"gen_blocked", vars:{ list: issueTextsBothLangs("errors") } });
+    goToIssue(issues.errors[0].tab, issues.errors[0].classId);
+    return false;
+  }
+  bot.genBlocked = false;
+  generateSchedule();
+  track("schedule_generate", {classes: state.classes.length, unplaced: state.schedule.unplacedCount, via: "bot"});
+  bot.log.push({ who:"bot", key:"gen_done", vars:{u: state.schedule.unplacedCount} });
+  if(issues.warnings.length) bot.log.push({ who:"bot", key:"gen_warn", vars:{ list: issueTextsBothLangs("warnings") } });
+  activeTab = "schedule";
+  return true;
+}
 function botSteps(){
   var s = [];
   s.push({ key:"intro", ask: function(){ return bt("intro")+"\n"+bt("intro_warn"); }, options: function(){ return [["start", bt("start")]]; }, apply: function(){} });
@@ -2630,18 +2725,24 @@ function botSteps(){
       state.classes.forEach(function(c){ if(c.grade>=5 && !c.isHomeschool){ c.officialPlanApplied = false; autofillCurriculum(c.id); n++; } });
       bot.log.push({ who:"bot", key:"plan_done", vars:{n:n} });
     } });
-  s.push({ key:"gen", ask: function(){ return bt("q_gen"); }, options: function(){ return [["gen", bt("a_gen")], ["later", bt("a_later")]]; },
+  s.push({ key:"gen", ask: function(){ return bt("q_gen"); },
+    options: function(){
+      // после неудачной попытки: «Продолжить» (проверить ещё раз) + переходы к местам ошибок
+      if(!bot.genBlocked) return [["gen", bt("a_gen")], ["later", bt("a_later")]];
+      return [["gen", bt("a_continue")]].concat(botIssueOptions(generationIssues().errors), [["later", bt("a_later")]]);
+    },
     apply: function(v){
-      if(v !== "gen") return;
-      generateSchedule();
-      track("schedule_generate", {classes: state.classes.length, unplaced: state.schedule.unplacedCount, via: "bot"});
-      bot.log.push({ who:"bot", key:"gen_done", vars:{u: state.schedule.unplacedCount} });
-      var noTeacher = Object.keys(state.curriculum).some(function(cid){
-        var pl = state.curriculum[cid];
-        return Object.keys(pl).some(function(sid){ return pl[sid].hours > 0 && !pl[sid].teacherId; });
-      });
-      if(noTeacher) bot.log.push({ who:"bot", key:"gen_noteachers" });
-      activeTab = "schedule";
+      if(v !== "gen") return "skip"; // «Позже» — сразу к финалу, минуя разбор результата
+      return botRunGenerate() ? undefined : false;
+    } });
+  s.push({ key:"review", ask: function(){ return bt("q_review"); },
+    options: function(){
+      var is = generationIssues();
+      return [["regen", bt("a_regen")]].concat(botIssueOptions(is.errors.concat(is.warnings)),
+        [["go:schedule", bt("a_open_schedule")], ["finish", bt("a_finish")]]);
+    },
+    apply: function(v){
+      if(v === "regen"){ botRunGenerate(); return false; } // остаёмся на шаге разбора
     } });
   s.push({ key:"done", ask: function(){ return bt("done"); }, options: function(){ return [["restart", bt("restart")], ["collapse", bt("a_collapse")]]; }, apply: function(){} });
   return s;
@@ -2651,7 +2752,7 @@ function botGoTo(i){
   bot.idx = i;
   if(steps[i]) bot.log.push({ who:"bot", step: i });
 }
-function botRestart(){ bot.log = []; bot.open = true; botGoTo(0); track("bot_start"); }
+function botRestart(){ bot.log = []; bot.open = true; bot.genBlocked = false; botGoTo(0); track("bot_start"); }
 function botAnswer(value){
   var steps = botSteps(), st = steps[bot.idx];
   if(!st) return;
@@ -2661,14 +2762,35 @@ function botAnswer(value){
     render();
     return;
   }
-  var opt = st.options().filter(function(o){ return o[0] === value; })[0];
-  bot.log.push({ who:"me", step: bot.idx, value: value, text: opt ? opt[1] : String(value) });
-  try{ st.apply(value); }catch(e){ bot.log.push({ who:"bot", key:"err", vars:{ m: e.message } }); }
+  // «Открыть: …» — переход в мастер без ответа на вопрос: бот остаётся на том же шаге
+  if(value.indexOf("go:") === 0){
+    var gp = value.split(":");
+    goToIssue(gp[1], gp[2] || null);
+    track("bot_goto", {tab: gp[1], step: st.key});
+    render();
+    try{ document.getElementById("steps").scrollIntoView({ behavior: "smooth" }); }catch(x){}
+    return;
+  }
+  // подпись ответа запоминаем на обоих языках: подписи кнопок шага могут меняться (Составить → Продолжить)
+  var label = inBothLangs(function(){
+    var o = st.options().filter(function(x){ return x[0] === value; })[0];
+    return o ? o[1] : String(value);
+  });
+  bot.log.push({ who:"me", step: bot.idx, value: value, label: label });
+  var res;
+  try{ res = st.apply(value); }catch(e){ bot.log.push({ who:"bot", key:"err", vars:{ m: e.message } }); }
   track("bot_step", {step: st.key});
   // ответы про классы, дни, смены, уроки и учебный план делают старое расписание неактуальным
-  if(["intro","staff","gen"].indexOf(st.key) < 0) state.schedule = null;
-  botGoTo(bot.idx + 1);
+  if(["intro","staff","gen","review"].indexOf(st.key) < 0) state.schedule = null;
+  // apply: false — остаться на шаге, "skip" — перескочить следующий шаг
+  if(res !== false) botGoTo(bot.idx + (res === "skip" ? 2 : 1));
   render();
+}
+function inBothLangs(fn){
+  var saved = uiLang, out = {};
+  ["ru","uz"].forEach(function(l){ uiLang = l; out[l] = fn(); });
+  uiLang = saved;
+  return out;
 }
 /* Текст реплики собирается при каждой отрисовке на текущем языке интерфейса,
    поэтому после переключения RU/UZ вся история бота тоже переводится. */
@@ -2678,6 +2800,7 @@ function botMsgText(m, steps){
     var s = (steps || botSteps())[m.step];
     if(!s) return m.text || "";
     if(m.who === "me"){
+      if(m.label) return m.label[uiLang] || m.label.ru;
       var o = s.options().filter(function(x){ return x[0] === m.value; })[0];
       return o ? o[1] : (m.text || String(m.value));
     }
