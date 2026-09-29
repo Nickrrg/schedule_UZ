@@ -343,8 +343,11 @@ td.focus-cell{outline:3px solid var(--accent);outline-offset:-3px;}
 .avail-day.is-off{background:#FDEBDD;border-color:#F3C7A5;color:#B5530F;} .avail-day.is-pd{background:var(--surface-2);}
 .avail-slot{width:64px;height:28px;border:1px solid var(--border);border-radius:6px;background:var(--surface);cursor:pointer;color:#B5530F;font-weight:700;}
 .avail-slot.is-closed{background:#FDEBDD;border-color:#F3C7A5;} .avail-slot.is-off{background:var(--surface-2);cursor:not-allowed;}
-body.focus-start #steps, body.focus-start #main, body.focus-start .topbar-actions{filter:blur(2px);opacity:.35;pointer-events:none;user-select:none;transition:opacity .2s, filter .2s;}
-body.focus-start #bot .bot{box-shadow:0 0 0 4px rgba(46,108,223,.25), 0 12px 32px rgba(15,35,70,.12);}
+.mode-switch .seg-btn{min-height:34px;padding:6px 14px;font-size:.84rem;}
+.mode-strip{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;background:var(--panel);border:1px solid #D3E3F8;border-radius:10px;padding:8px 14px;margin:0 0 12px;font-size:.88rem;}
+.bot-safe{margin:0;font-size:.84rem;color:var(--ink-soft);display:flex;gap:8px;align-items:flex-start;}
+.bot-detail{border-top:1px solid var(--border);padding-top:8px;margin-top:2px;}
+[hidden]{display:none !important;}
 .focus-hint{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;font-size:.86rem;color:var(--ink-soft);margin-top:4px;}
 .tr-class{border-top:1px solid var(--border);padding:10px 0;}
 .tr-class-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;}
@@ -359,8 +362,11 @@ body.focus-start #bot .bot{box-shadow:0 0 0 4px rgba(46,108,223,.25), 0 12px 32p
 <header class="topbar">
   <div class="topbar-inner">
     <div class="brand" id="brandText">Конструктор расписания</div>
+    <div class="mode-switch seg-group" role="group" aria-label="Режим">
+      <button type="button" class="seg-btn" id="modeBot">Помощник</button>
+      <button type="button" class="seg-btn" id="modeWork">Конструктор</button>
+    </div>
     <div class="topbar-actions">
-      <button class="theme-toggle" id="emkBtn">Из eMaktab</button>
       <button class="theme-toggle" id="refsBtn">Справочники</button>
       <button class="theme-toggle" id="langToggle">Til: o'zbek</button>
     </div>
@@ -369,6 +375,7 @@ body.focus-start #bot .bot{box-shadow:0 0 0 4px rgba(46,108,223,.25), 0 12px 32p
 <div class="app">
   <div id="storageBar"></div>
   <section id="bot"></section>
+  <div id="modeStrip"></div>
   <nav class="steps" id="steps"></nav>
   <main id="main"></main>
 </div>
@@ -398,7 +405,7 @@ var STRINGS = {
     col_name: "Название", col_shift: "Смена", col_days: "Учебных дней", col_grade: "Класс",
     col_students: "Учеников", col_lang: "Язык обучения", col_spec: "Специализация",
     col_subject: "Предмет", col_hours: "Часов/нед", col_teacher: "Учитель", col_block: "Блок",
-    col_group: "Групповой урок", col_capacity: "Вместимость", col_type: "Тип", col_homeschool: "ДО",
+    col_group: "Групповой урок", col_capacity: "Вместимость", col_type: "Тип", col_homeschool: "Домашнее обучение",
     btn_add_class: "Добавить класс", btn_add_subject: "Добавить предмет", btn_add_teacher: "Добавить учителя",
     btn_add_room: "Добавить кабинет", btn_generate: "Сгенерировать расписание",
     btn_clear_schedule: "Очистить расписание", btn_export_excel: "Скачать Excel (.xlsx)",
@@ -438,7 +445,7 @@ function t(key){
       cfg_periods: "Уроков за смену", cfg_ho_periods: "Уроков в день на ДО", cfg_schooltype: "Тип школы",
       criterial: "Критериальная", classical: "Классическая",
       classes_hint: "Официальный учебный план есть только для критериальной школы, 5–11 класс. Для классической школы и 1–4 класса часы вносятся вручную. ДО — домашнее обучение: по умолчанию уроки после последнего урока обычных классов.",
-      classes_list: "Классы", preset_btn: "Восстановить пресет (класс А в каждой параллели)",
+      classes_list: "Классы", preset_btn: "Добавить классы 1-A … 11-A, если их нет",
       grade_word: "класс", add_class_short: "класс", no_classes_in_parallel: "Нет классов",
       no_parallel: "Без параллели", as_parallel: "как в параллели", jasorat_lbl: "Жасорат",
       days_word: "Учебных дней", periods_word: "Уроков в день", as_default: "по умолчанию",
@@ -450,7 +457,7 @@ function t(key){
       cfg_periods: "Smenadagi darslar", cfg_ho_periods: "Uy ta'limi: kunlik darslar", cfg_schooltype: "Maktab turi",
       criterial: "Mezonli", classical: "An'anaviy",
       classes_hint: "Rasmiy o'quv rejasi faqat mezonli maktabning 5–11 sinflari uchun mavjud. An'anaviy maktab va 1–4 sinflar uchun soatlar qo'lda kiritiladi. Uy ta'limi — odatda oddiy sinflarning oxirgi darsidan keyingi darslar.",
-      classes_list: "Sinflar", preset_btn: "Andozani tiklash (har bir parallelda A sinf)",
+      classes_list: "Sinflar", preset_btn: "1-A … 11-A sinflarini qo'shish (agar yo'q bo'lsa)",
       grade_word: "sinf", add_class_short: "sinf", no_classes_in_parallel: "Sinflar yo'q",
       no_parallel: "Parallelsiz", as_parallel: "parallel bo'yicha", jasorat_lbl: "Jasorat",
       days_word: "O'quv kunlari", periods_word: "Kunlik darslar", as_default: "standart",
@@ -745,7 +752,7 @@ var UZ_TR_P1 = {
   "назначено по всей школе / можно за неделю": "butun maktab bo'yicha tayinlangan / haftasiga mumkin",
   "Назначьте учителей — здесь появятся их часы.": "O'qituvchilarni tayinlang — bu yerda ularning soatlari paydo bo'ladi.",
   "Учителей пока нет — добавьте их в «Справочниках» или выберите «+ новый учитель…» в списке.": "Hozircha o'qituvchilar yo'q — ularni «Ma'lumotnomalar»da qo'shing yoki ro'yxatda «+ yangi o'qituvchi…» ni tanlang.",
-  "← К мастеру": "← Bosqichlarga",
+  "← Назад": "← Bosqichlarga",
   "Учителя, предметы и кабинеты школы. Кто что ведёт — видно на шаге «Нагрузка».": "Maktab o'qituvchilari, fanlari va xonalari. Kim nimani o'tishi «Yuklama» bosqichida ko'rinadi.",
   "План заполнен по другому документу: «": "Reja boshqa hujjat bo'yicha to'ldirilgan: «",
   "». Параметры класса сейчас указывают на источник выше.": "». Sinf parametrlari hozir yuqoridagi manbaga ishora qiladi.",
@@ -877,7 +884,7 @@ var UZ_TR_P1 = {
   "Начать заново": "Qaytadan boshlash",
   "Продолжить": "Davom ettirish",
   "Открыть": "Ochish",
-  "5 шагов — и первое расписание готово. Всё можно поправить потом в мастере.": "5 qadam — va birinchi jadval tayyor. Hammasini keyin bosqichlarda tuzatish mumkin.",
+  "5 шагов — и первое расписание готово. Всё можно поправить потом в конструкторе.": "5 qadam — va birinchi jadval tayyor. Hammasini keyin bosqichlarda tuzatish mumkin.",
   "Свернуть": "Yig'ish",
   " ч/нед, а с учётом выходных и максимума в день можно не больше ": " soat/hafta, dam olish kunlari va kunlik maksimum bilan esa ko'pi bilan ",
   " ч — не хватит слотов.": " soat — joy yetmaydi.",
@@ -911,7 +918,7 @@ var UZ_TR_P2 = {
   "— загрузке это не мешает, можно продолжать.": "— bu yuklashga xalal bermaydi, davom etish mumkin.",
   "По учебной нагрузке урок есть, а в расписании этой недели его нет — возможно, его забыли поставить: ": "«Dars soati» hisobotida dars bor, lekin shu haftaning dars jadvalida yo'q — ehtimol, uni qo'yish unutilgan: ",
   "Урок стоит в расписании, но его нет в учебной нагрузке: ": "Dars jadvalda bor, lekin «Dars soati» hisobotida yo'q: ",
-  "Замены и разовые уроки из учебной нагрузки не показаны: ": "«Dars soati» hisobotidagi almashtirishlar va bir martalik darslar ko'rsatilmadi: ",
+  "Замены, разовые уроки и уроки раз в две недели (0,5 ч) из учебной нагрузки не показаны: ": "O'qituvchini almashtirish, bir martalik darslar va ikki haftada bir o'tadigan darslar (0,5 soat) ko'rsatilmadi: ",
   "Выбрать другие файлы": "Boshqa fayllarni tanlash",
   "Выбрать файлы .xls": ".xls fayllarini tanlash",
   "Группы (как в eMaktab): ": "Guruhlar (eMaktab'dagidek): ",
@@ -921,7 +928,7 @@ var UZ_TR_P2 = {
   "Если да — загрузите его: классы, учителя и нагрузка заполнятся сами, а проверка сразу покажет конфликты и окна. Если нет — составим с нуля за 5 шагов.": "Ha bo'lsa — uni yuklang: sinflar, o'qituvchilar va yuklama o'zi to'ldiriladi, tekshiruv esa darhol to'qnashuvlar va bo'sh oraliqlarni ko'rsatadi. Yo'q bo'lsa — 5 qadamda noldan tuzamiz.",
   "Загружено из eMaktab: ": "eMaktab'dan yuklandi: ",
   "Загрузите его — классы, учителя, нагрузка и сетка заполнятся сами. Вводить вручную не нужно.": "Uni yuklang — sinflar, o'qituvchilar, yuklama va jadval o'zi to'ldiriladi. Qo'lda kiritish shart emas.",
-  "Загрузите расписание из eMaktab": "Dars jadvalini eMaktab'dan yuklang",
+  "Загрузите данные из eMaktab": "Ma'lumotlarni eMaktab'dan yuklang",
   "Загрузите текущее расписание школы из eMaktab — классы, учителя, кабинеты, нагрузка и сетка заполнятся сами, а проверка сразу покажет конфликты и окна.": "Maktabning joriy dars jadvalini eMaktab'dan yuklang — sinflar, o'qituvchilar, xonalar, yuklama va jadval o'zi to'ldiriladi, tekshiruv esa darhol to'qnashuvlar va bo'sh oraliqlarni ko'rsatadi.",
   "Загрузить в конструктор": "Konstruktorga yuklash",
   "Загрузить другие файлы": "Boshqa fayllarni yuklash",
@@ -944,10 +951,10 @@ var UZ_TR_P2 = {
   "Неделя в файле: ": "Fayldagi hafta: ",
   "Нет, начну с нуля": "Yo'q, noldan boshlayman",
   "Ниже — проверка: конфликты, окна, перегруз. «Перестроить» пока составляет расписание заново — уроки переместятся; перестроение с минимумом изменений будет в следующей версии.": "Quyida — tekshiruv: to'qnashuvlar, bo'sh oraliqlar, ortiqcha yuklama. «Qayta tuzish» hozircha jadvalni yangidan tuzadi — darslar o'rni o'zgaradi; minimal o'zgarishlar bilan qayta tuzish keyingi versiyada bo'ladi.",
-  "Образование → Расписание → вкладка «Учителя» → «Сетка расписания по всем учителям» → Экспорт. Выберите одну обычную неделю четверти — без праздников и замен.": "Ta'lim → Dars jadvali → «O'qituvchilar» → «Barcha o'qituvchilar bo'yicha dars jadvali setkasi» → Yuklab olish. Chorakning bayram va almashtirishlarsiz bitta oddiy haftasini tanlang.",
+  "emaktab.uz → Образование → Расписание → вкладка «Учителя» → «Сетка расписания по всем учителям» → Экспорт. Выберите одну обычную неделю четверти — без праздников и замен.": "emaktab.uz → Ta'lim → Dars jadvali → «O'qituvchilar» → «Barcha o'qituvchilar bo'yicha dars jadvali setkasi» → Yuklab olish. Chorakning bayram va almashtirishlarsiz bitta oddiy haftasini tanlang.",
   "Окна у классов": "Sinflardagi bo'sh oraliqlar",
   "Открыть расписание и проверку": "Dars jadvali va tekshiruvni ochish",
-  "Отчёты → Административные → «Учебная нагрузка»: «По предметам» — Да, «По классам» — Да, «Отчётный период» — «Весь год» → Экспорт. Даёт полные названия предметов.": "Ta'lim → Hisobotlar → Boshqaruv → «Dars soati» (hisobot «O'qituvchilarning dars soatlari»): «Fanlar bo'yicha» — Ha, «Sinflar bo'yicha» — Ha, «Hisobot davri» — «Yil davomida» → Yuklab olish. Fanlarning to'liq nomlarini beradi.",
+  "emaktab.uz → Отчёты → Административные → «Учебная нагрузка»: «По предметам» — Да, «По классам» — Да, «Отчётный период» — «Весь год» → Экспорт. Даёт полные названия предметов.": "emaktab.uz → Ta'lim → Hisobotlar → Boshqaruv → «Dars soati» (hisobot «O'qituvchilarning dars soatlari»): «Fanlar bo'yicha» — Ha, «Sinflar bo'yicha» — Ha, «Hisobot davri» — «Yil davomida» → Yuklab olish. Fanlarning to'liq nomlarini beradi.",
   "Перегруз проверяется, если у учителя задан максимум уроков в день («Справочники» → «Учителя»). Нажмите на пункт — откроется сетка класса с этой ячейкой.": "Ortiqcha yuklama o'qituvchiga kunlik maksimal darslar belgilangan bo'lsa tekshiriladi («Ma'lumotnomalar» → «O'qituvchilar»). Bandni bosing — shu katak bilan sinf jadvali ochiladi.",
   "Перегруз учителя": "O'qituvchining ortiqcha yuklamasi",
   "Повторная загрузка: классы, учителя, план и сетка заменятся данными из файлов. Учителя, классы и кабинеты сопоставятся по именам eMaktab — их настройки (выходные, язык обучения, число учеников) сохранятся.": "Qayta yuklash: sinflar, o'qituvchilar, reja va jadval fayllardagi ma'lumotlar bilan almashtiriladi. O'qituvchilar, sinflar va xonalar eMaktab nomlari bo'yicha moslanadi — ularning sozlamalari (dam olish kunlari, ta'lim tili, o'quvchilar soni) saqlanadi.",
@@ -1031,9 +1038,9 @@ var UZ_TR_P3 = {
   "Выходной — нажмите, чтобы сделать рабочим": "Dam olish kuni — ish kuni qilish uchun bosing",
   "Да": "Ha",
   "Данные изменились после составления — сначала перестройте расписание, иначе список изменений будет неполным.": "Jadval tuzilgandan keyin ma'lumotlar o'zgardi — avval jadvalni qayta tuzing, aks holda o'zgarishlar ro'yxati to'liq bo'lmaydi.",
-  "День профессионального развития": "Kasbiy rivojlanish kuni",
+  "Методический день (день профразвития)": "Metodik kun (kasbiy rivojlanish kuni)",
   "Для 1–4 классов с каракалпакским языком обучения официального плана нет — его утверждает Министерство Республики Каракалпакстан. Заполняйте план вручную ниже.": "Qoraqalpoq tilida ta'lim beriladigan 1–4-sinflar uchun rasmiy reja yo'q — uni Qoraqalpog'iston Respublikasi vazirligi tasdiqlaydi. Rejani quyida qo'lda to'ldiring.",
-  "Дни профразвития — по приказу №246; поменять их и поставить учителю свой день можно на шаге «Расписание» → «Правила школы».": "Kasbiy rivojlanish kunlari — 246-son buyruq bo'yicha; ularni o'zgartirish va o'qituvchiga o'z kunini belgilash «Dars jadvali» → «Maktab qoidalari» bosqichida mumkin.",
+  "Методические дни (дни профразвития) — по приказу №246; поменять их и поставить учителю свой день можно в конструкторе на шаге «Расписание» → «Правила школы».": "Metodik kunlar (kasbiy rivojlanish kunlari) — 246-son buyruq bo'yicha; ularni o'zgartirish va o'qituvchiga o'z kunini belgilash «Dars jadvali» → «Maktab qoidalari» bosqichida mumkin.",
   "Дни — по приказу №246; поменяйте, если в вашей школе иначе. Группа учителя — по предметам, которые он ведёт (больше всего часов); у учителя начальных классов больше половины часов в 1–4 классах. Свой день учителю можно поставить ниже.": "Kunlar — 246-son buyruq bo'yicha; maktabingizda boshqacha bo'lsa, o'zgartiring. O'qituvchi guruhi — u o'qitadigan fanlar bo'yicha (eng ko'p soat); boshlang'ich sinf o'qituvchisining soatlari yarmidan ko'pi 1–4-sinflarda. O'qituvchiga o'z kunini quyida belgilash mumkin.",
   "Добавить 1 ч в план этих классов": "Bu sinflar rejasiga 1 soat qo'shish",
   "Добавить «Kelajak soati» (1 ч) в план этих классов": "Bu sinflar rejasiga «Kelajak soati» (1 soat) qo'shish",
@@ -1064,7 +1071,7 @@ var UZ_TR_P3 = {
   "Схема класса": "Sinf sxemasi",
   "Схема любого класса в формате eMaktab": "Istalgan sinf sxemasi eMaktab formatida",
   "У всех классов «Kelajak soati» уже есть.": "Barcha sinflarda «Kelajak soati» allaqachon bor.",
-  "Урок в день профессионального развития учителя": "O'qituvchining kasbiy rivojlanish kunidagi dars",
+  "Урок в методический день учителя (день профразвития)": "O'qituvchining metodik kunidagi dars (kasbiy rivojlanish kuni)",
   "Урок, который у учителя закрыт": "O'qituvchida yopiq bo'lgan dars",
   "Учебный план заполнен по документам": "O'quv reja hujjatlar bo'yicha to'ldirildi",
   "Учителей": "O'qituvchilar",
@@ -1074,7 +1081,7 @@ var UZ_TR_P3 = {
   "в плане нет «Kelajak soati» (Час будущего)": "rejada «Kelajak soati» yo'q",
   "выходной": "dam olish",
   "выходной: ": "dam olish kuni: ",
-  "день профразвития: ": "kasbiy rivojlanish kuni: ",
+  "методический день: ": "metodik kun: ",
   "добавить: ": "qo'shish: ",
   "закрыто уроков: ": "yopiq darslar: ",
   "замен педагога": "o'qituvchi almashtirish",
@@ -1087,15 +1094,38 @@ var UZ_TR_P3 = {
   "официального плана для этого языка нет — заполните вручную или позже": "bu til uchun rasmiy reja yo'q — qo'lda yoki keyinroq to'ldiring",
   "перенесено": "ko'chirildi",
   "перенесено классов": "ko'chirilgan sinflar",
-  "профразвитие": "kasbiy rivojlanish",
+  "метод. день": "metodik kun",
   "убрать: ": "olib tashlash: ",
-  "по предметам: ": "fanlar bo'yicha: ",
+  // помощник и конструктор на разных экранах
+  "Помощник": "Yordamchi",
+  "Классный час в eMaktab назван «": "eMaktab'da sinf soati «",
+  "» (классов: ": "» deb nomlangan (sinflar: ",
+  "). С 2025/2026 учебного года его правильное название — «Kelajak soati» («Час будущего», приказ МДШО №308): лучше переименовать в eMaktab. В конструктор он загрузится как «Час будущего».": "). 2025/2026 o'quv yilidan uning to'g'ri nomi — «Kelajak soati» (MMTV 308-son buyrug'i): eMaktab'da nomini o'zgartirgan ma'qul. Konstruktorga «Kelajak soati» sifatida yuklanadi.",
+  "Kelajak soati (в eMaktab: «": "Kelajak soati (eMaktab'da: «",
+  "Загружено из eMaktab": "eMaktab'dan yuklangan",
+  "Загрузить заново": "Qayta yuklash",
+  "Подставить предметы и часы по приказу": "Fanlar va soatlarni buyruq bo'yicha qo'yish",
+  "Нужно, если поменяли направление, язык или класс: список предметов и часы станут как в документе выше. Назначенные учителя сохранятся.": "Yo'nalish, til yoki sinf o'zgargan bo'lsa kerak: fanlar ro'yxati va soatlar yuqoridagi hujjatdagidek bo'ladi. Tayinlangan o'qituvchilar saqlanadi.",
+  "Базовый учебный план": "Tayanch o'quv reja",
+  "Проверю ваше расписание или составлю новое": "Jadvalingizni tekshiraman yoki yangisini tuzaman",
+  "загрузите две выгрузки из eMaktab. Я проверю ваше расписание: конфликты учителей, окна, кабинеты. Потом можно внести изменения и перенести их в eMaktab.": "eMaktab'dan ikkita faylni yuklang. Men jadvalingizni tekshiraman: o'qituvchilar to'qnashuvi, bo'sh oraliqlar, xonalar. Keyin o'zgartirish kiritib, ularni eMaktab'ga ko'chirish mumkin.",
+  "составлю расписание заново за 5 шагов: школа и классы → режим → учителя → учебный план → готовое расписание.": "jadvalni 5 qadamda yangidan tuzaman: maktab va sinflar → rejim → o'qituvchilar → o'quv reja → tayyor jadval.",
+  "Да, проверить моё расписание": "Ha, jadvalimni tekshirish",
+  "Нет, составить заново": "Yo'q, yangidan tuzish",
+  "Всё можно поправить вручную в конструкторе": "Hammasini konstruktorda qo'lda tuzatish mumkin",
+  "Конструктор": "Konstruktor",
+  "Помощник: шаг ": "Yordamchi: ",
+  "Вернуться в помощник": "Yordamchiga qaytish",
+  "Открыть конструктор →": "Konstruktorni ochish →",
+  "Настроить подробно в конструкторе →": "Konstruktorda batafsil sozlash →",
+  "Проверю расписание из eMaktab и составлю новое — или составлю с нуля.": "eMaktab'dagi jadvalni tekshiraman va yangisini tuzaman — yoki noldan tuzaman.",
+  "В eMaktab ничего не отправляется — ваше расписание там останется как есть. Всё, что вы делаете здесь, хранится в этом браузере.": "eMaktab'ga hech narsa yuborilmaydi — u yerdagi jadvalingiz o'zgarmaydi. Bu yerda qilgan hamma narsangiz shu brauzerda saqlanadi.",
   // вопросы «Правила школы» и группы дней профразвития (строки в массивах RULE_QUESTIONS, PD_GROUPS)
   "«Kelajak soati» (Час будущего) — первым уроком в понедельник у всех классов?": "«Kelajak soati» — barcha sinflarda dushanba kuni birinchi darsmi?",
   "Приказ МДШО №308: с 2025/2026 учебного года классный час идёт каждый понедельник первым уроком как «Kelajak soati». Ведёт классный руководитель.": "MMTV 308-son buyrug'i: 2025/2026 o'quv yilidan sinf soati har dushanba birinchi dars sifatida «Kelajak soati» bo'lib o'tadi. Sinf rahbari o'tkazadi.",
   "Математика в 1–4 классах — первым уроком, в понедельник — вторым?": "1–4-sinflarda matematika — birinchi dars, dushanba kuni — ikkinchi darsmi?",
   "Правило методистов: в начальных классах математика — первый урок, а в понедельник первым идёт «Kelajak soati».": "Metodistlar qoidasi: boshlang'ich sinflarda matematika — birinchi dars, dushanba kuni esa birinchi «Kelajak soati».",
-  "В школе есть дни профессионального развития учителей?": "Maktabda o'qituvchilarning kasbiy rivojlanish kunlari bormi?",
+  "В школе есть методические дни (дни профразвития) учителей?": "Maktabda o'qituvchilarning metodik kunlari (kasbiy rivojlanish kunlari) bormi?",
   "ПП-231 от 21.06.2024 и приказ МДШО №246: в свой день учитель предмета не ведёт уроков — например, учителя физики, химии и биологии в среду. Вводятся поэтапно, в первую очередь в опорных школах.": "PQ-231 (21.06.2024) va MMTV 246-son buyrug'i: o'z kunida fan o'qituvchisi dars o'tmaydi — masalan, fizika, kimyo va biologiya o'qituvchilari chorshanba kuni. Bosqichma-bosqich, avvalo tayanch maktablarda joriy etiladi.",
   "История, воспитание, основы права": "Tarix, tarbiya, huquq asoslari",
   "Родной язык и литература, узбекский, русский": "Ona tili va adabiyot, o'zbek tili, rus tili",
@@ -1168,7 +1198,7 @@ var EVENT_CATALOG = {
   import_emaktab_result:{ params: ["ok","reason","files","teachers","classes","rooms","lessons","unmapped","duration_ms","via"], when: "итог загрузки из eMaktab: ok или файл не подошёл (reason)" },
   check_result:         { params: ["conflicts","combined","rooms","clashes","windows","overload","plan","directions"], when: "проверка расписания сразу после загрузки из eMaktab" },
   rule_answer:          { params: ["rule","on"], when: "ответ на вопрос «Правила школы»: kelajak | primaryMath | pd" },
-  focus_start:          { params: ["action"], when: "фокус на старте: shown — показан, dismiss — «Осмотреться без подсказки»" },
+  screen_open:          { params: ["screen","source"], when: "переключён режим: bot — «Помощник», work — «Конструктор»; source = nav | bot | issue | refs…" },
   transfer_list_opened: { params: ["classes","changed","cells","replacements"], when: "открыт «Перенос в eMaktab»: классов с изменениями, изменённых ячеек, замен педагога" },
   transfer_marked:      { params: ["done","total"], when: "класс отмечен «перенесено»: сколько отмечено из скольких" },
   lang_switch:          { params: ["to"], when: "переключён язык" },
@@ -1555,7 +1585,7 @@ function planSourceLabel(src){
   if(src.kind === "227") return uzt("Приказ №227 от 26.06.2026, вариативный план: ")+vdirLabel(src.key);
   if(src.kind === "183") return uzt("Приказ №183 от 25.05.2026, направление: ")+trackLabel(src.key);
   if(src.kind === "133") return uzt("Приказ №133 от 10.04.2026, базовый учебный план 2026–2027");
-  return uzt("Базовый учебный план (сетка часов КТП)");
+  return uzt("Базовый учебный план");
 }
 function ktpBaseHours(name, grade){
   for(var i=0; i<KTP_GRID.length; i++){ var r = KTP_GRID[i]; if(r.subject === name && r.base[String(grade)] !== undefined) return r.base[String(grade)]; }
@@ -1733,6 +1763,11 @@ function initTabGuard(){
     if(ev.key === TAB_KEY){
       var other = null; try{ other = JSON.parse(ev.newValue || "null"); }catch(x){}
       if(!other || other.id === TAB_ID) return;
+    } else {
+      // запись данных из другого окна, а последней открыта эта вкладка — она рабочая, в «только чтение» не уходит
+      // (закрывающаяся прежняя вкладка могла дописать данные уже после открытия этой)
+      var last = null; try{ last = JSON.parse(localStorage.getItem(TAB_KEY) || "null"); }catch(x){}
+      if(last && last.id === TAB_ID) return;
     }
     storage.readOnly = true;
     track("multi_tab_detected");
@@ -1984,12 +2019,57 @@ function renderSteps(){
   }
 }
 
-/* Переход на шаг мастера; tab_open — при любом переходе, с источником (nav | issue | bot). */
+/* Два режима на разных экранах (0.11, пилот, раздел 8, п. 14): «Помощник» — бот на всю страницу, ведёт по шагам
+   до результата; «Конструктор» — шаги, справочники, загрузка, тонкая настройка. Одновременно виден только один.
+   Экран запоминается в браузере (tt_screen) и в адресе (#/pomoshnik, #/konstruktor/<шаг>) — работает «Назад» браузера.
+   Схема данных не меняется. */
+var ui = { screen: null };
+function screenInitial(){
+  var h = /^#\/(pomoshnik|konstruktor)(?:\/(\w+))?/.exec(location.hash || "");
+  if(h){ if(h[2] && ["classes","load","schedule","export","refs","import"].indexOf(h[2]) >= 0) activeTab = h[2]; return h[1] === "pomoshnik" ? "bot" : "work"; }
+  try{ var s = localStorage.getItem("tt_screen"); if(s === "bot" || s === "work") return s; }catch(e){}
+  // новый пользователь и незаконченный помощник — помощник; есть расписание или помощник пройден — конструктор
+  return !state.schedule && !(bot.path && bot.step >= botDoneStep()) ? "bot" : "work";
+}
+function screenHash(){ return ui.screen === "bot" ? "#/pomoshnik" : "#/konstruktor/" + activeTab; }
+function goScreen(screen, source){
+  if(ui.screen !== screen) track("screen_open", { screen: screen, source: source || "nav" });
+  ui.screen = screen;
+  try{ localStorage.setItem("tt_screen", screen); }catch(e){}
+}
+function syncHash(){
+  try{ if(location.hash !== screenHash()) history.pushState(null, "", screenHash()); }catch(e){}
+}
+window.addEventListener("popstate", function(){ ui.screen = screenInitial(); render(); });
+/* Переход на шаг конструктора; tab_open — при любом переходе, с источником (nav | issue | bot). keepScreen — остаться
+   в помощнике (помощник сам показывает итог загрузки или составления). */
 var lastWizardTab = "classes";
-function setTab(tab, source){
+function setTab(tab, source, keepScreen){
   if(tab !== activeTab) track("tab_open", { tab: tab, source: source || "nav" });
   activeTab = tab;
   if(tab !== "refs" && tab !== "import") lastWizardTab = tab;
+  if(!keepScreen) goScreen("work", source);
+}
+/* Полоска в конструкторе, пока помощник не пройден: «Помощник: шаг 3 из 5 — Вернуться». */
+function renderModeStrip(){
+  var el = document.getElementById("modeStrip");
+  if(!el) return;
+  var on = ui.screen === "work" && !!bot.path && bot.step < botDoneStep();
+  el.innerHTML = on ? '<div class="mode-strip"><span>'+escHtml(uzt("Помощник: шаг ")+(bot.step+1)+uzt(" из ")+botSteps().length+" — «"+botStepLabel(bot.step)+"»")+'</span><button type="button" class="btn btn-sm" data-mode="bot">'+escHtml(uzt("Вернуться в помощник"))+'</button></div>' : "";
+}
+function renderMode(){
+  var isBot = ui.screen === "bot";
+  document.getElementById("bot").hidden = !isBot;
+  document.getElementById("steps").hidden = isBot;
+  document.getElementById("main").hidden = isBot;
+  [["modeBot", isBot], ["modeWork", !isBot]].forEach(function(x){
+    var b = document.getElementById(x[0]); if(!b) return;
+    b.classList.toggle("on", x[1]); b.setAttribute("aria-pressed", x[1] ? "true" : "false");
+    b.textContent = x[0] === "modeBot" ? uzt("Помощник") : uzt("Конструктор");
+  });
+  renderModeStrip();
+  try{ if(localStorage.getItem("tt_screen") !== ui.screen) localStorage.setItem("tt_screen", ui.screen); }catch(e){}
+  syncHash();
 }
 
 /* ---------------- render dispatch ---------------- */
@@ -2010,6 +2090,7 @@ function render(){
   bindGlobalActions();
   saveState();
   renderBot();
+  renderMode();
 }
 
 /* ================= CLASSES TAB ================= */
@@ -2213,41 +2294,9 @@ function buildPreset(st){
 function miniField(label, control){
   return '<label class="mini"><span>'+escHtml(label)+'</span>'+control+'</label>';
 }
-function classRowHtml(c){
-  var isCriterial = state.config.schoolType === "criterial";
-  var h = '<div class="class-row">';
-  h += miniField(t("col_name"), '<input type="text" class="class-name-input" data-act="class-name" data-id="'+c.id+'" value="'+escAttr(c.name)+'">');
-  // параллель меняется всегда — например, если импорт угадал её неверно (P0-7)
-  var gs = '<select data-act="class-grade" data-id="'+c.id+'"><option value=""'+(!c.grade?" selected":"")+'>—</option>';
-  for(var g=1; g<=11; g++){ gs += '<option value="'+g+'"'+(c.grade===g?" selected":"")+'>'+g+'</option>'; }
-  h += miniField(t("col_grade"), gs+'</select>');
-  var ls = '<select data-act="class-lang" data-id="'+c.id+'">';
-  LANG_OPTIONS.forEach(function(lo){ ls += '<option value="'+lo[0]+'"'+(c.instructionLang===lo[0]?" selected":"")+'>'+lo[1]+'</option>'; });
-  h += miniField(t("col_lang"), ls+'</select>');
-  // с какого урока школы учится класс (сквозная нумерация, v0.10); по умолчанию — как у параллели, у ДО — после всех
-  var defStart = c.isHomeschool ? homeschoolDefaultStart() : parallelStart(c.grade);
-  var ss = '<select data-act="class-start" data-id="'+c.id+'">'+
-    '<option value=""'+(!c.startOverride?" selected":"")+'>'+escHtml(c.isHomeschool ? t("as_default") : t("as_parallel"))+' ('+defStart+')</option>';
-  for(var sn=1; sn<=MAX_LESSON; sn++){ ss += '<option value="'+sn+'"'+(c.startOverride===sn?" selected":"")+'>'+sn+'</option>'; }
-  h += miniField(uzt("С урока"), ss+'</select>');
-  var pd = c.grade ? parallelDays(c.grade) : (state.config.days||6);
-  h += miniField(t("col_days"), '<select data-act="class-days" data-id="'+c.id+'">'+
-    '<option value=""'+(!c.daysOverride?" selected":"")+'>'+escHtml(t("as_parallel"))+' ('+pd+')</option>'+
-    '<option value="5"'+(c.daysOverride===5?" selected":"")+'>5</option>'+
-    '<option value="6"'+(c.daysOverride===6?" selected":"")+'>6</option></select>');
-  var cDays = classDays(c), pPar = c.grade && state.config.parallels[c.grade] ? state.config.parallels[c.grade].periodsByDay : null;
-  var defP = c.isHomeschool ? (state.config.homeschoolPeriodsPerDay||3) : (pPar ? byDayLabel(pPar, cDays) : parallelPeriods(c.grade));
-  var defLbl = c.isHomeschool ? t("as_default") : t("as_parallel");
-  var pss = '<select data-act="class-periods" data-id="'+c.id+'"><option value=""'+(!c.periodsOverride && !c.periodsByDay?" selected":"")+'>'+escHtml(defLbl)+' ('+escHtml(String(defP))+')</option>';
-  for(var pp=1; pp<=10; pp++){ pss += '<option value="'+pp+'"'+(!c.periodsByDay && c.periodsOverride===pp?" selected":"")+'>'+pp+'</option>'; }
-  pss += '<option value="byday"'+(c.periodsByDay?" selected":"")+'>'+escHtml(c.periodsByDay ? byDayLabel(c.periodsByDay, cDays) : uzt("разное по дням…"))+'</option>';
-  h += miniField(t("periods_word"), pss+'</select>');
-  if(c.periodsByDay) h += byDayInputs("class-pday", 'data-id="'+c.id+'"', c.periodsByDay, cDays);
-  h += miniField(t("col_students"), '<input type="number" min="1" max="50" data-act="class-students" data-id="'+c.id+'" value="'+(c.studentCount||"")+'" placeholder="—" style="width:80px">');
-  h += '<label class="chip"><input type="checkbox" data-act="class-homeschool" data-id="'+c.id+'" '+(c.isHomeschool?"checked":"")+'> '+escHtml(t("col_homeschool"))+'</label>';
-  if(isCriterial && (c.grade===5 || c.grade===6)){
-    h += '<label class="chip"><input type="checkbox" data-act="class-jasorat" data-id="'+c.id+'" '+(c.jasorat?"checked":"")+'> '+escHtml(t("jasorat_lbl"))+'</label>';
-  }
+/* Направление класса (приказы №183, №227) и второй иностранный язык — на шаге «Классы и режим» и в «Плане класса». */
+function directionFieldsHtml(c){
+  var h = '', isCriterial = state.config.schoolType === "criterial";
   if(c.grade >= 7 && c.grade <= 11 && !c.isHomeschool){
     var lk = orderLangKey(c);
     var curDir = c.variativ ? "v:"+c.variativ : ((c.track && c.track !== "none" && c.grade >= 10) ? "t:"+c.track : "none");
@@ -2285,6 +2334,44 @@ function classRowHtml(c){
       h += miniField(uzt('2-й ин. язык'), sl+'</select>');
     }
   }
+  return h;
+}
+function classRowHtml(c){
+  var isCriterial = state.config.schoolType === "criterial";
+  var h = '<div class="class-row">';
+  h += miniField(t("col_name"), '<input type="text" class="class-name-input" data-act="class-name" data-id="'+c.id+'" value="'+escAttr(c.name)+'">');
+  // параллель меняется всегда — например, если импорт угадал её неверно (P0-7)
+  var gs = '<select data-act="class-grade" data-id="'+c.id+'"><option value=""'+(!c.grade?" selected":"")+'>—</option>';
+  for(var g=1; g<=11; g++){ gs += '<option value="'+g+'"'+(c.grade===g?" selected":"")+'>'+g+'</option>'; }
+  h += miniField(t("col_grade"), gs+'</select>');
+  var ls = '<select data-act="class-lang" data-id="'+c.id+'">';
+  LANG_OPTIONS.forEach(function(lo){ ls += '<option value="'+lo[0]+'"'+(c.instructionLang===lo[0]?" selected":"")+'>'+lo[1]+'</option>'; });
+  h += miniField(t("col_lang"), ls+'</select>');
+  // с какого урока школы учится класс (сквозная нумерация, v0.10); по умолчанию — как у параллели, у ДО — после всех
+  var defStart = c.isHomeschool ? homeschoolDefaultStart() : parallelStart(c.grade);
+  var ss = '<select data-act="class-start" data-id="'+c.id+'">'+
+    '<option value=""'+(!c.startOverride?" selected":"")+'>'+escHtml(c.isHomeschool ? t("as_default") : t("as_parallel"))+' ('+defStart+')</option>';
+  for(var sn=1; sn<=MAX_LESSON; sn++){ ss += '<option value="'+sn+'"'+(c.startOverride===sn?" selected":"")+'>'+sn+'</option>'; }
+  h += miniField(uzt("С урока"), ss+'</select>');
+  var pd = c.grade ? parallelDays(c.grade) : (state.config.days||6);
+  h += miniField(t("col_days"), '<select data-act="class-days" data-id="'+c.id+'">'+
+    '<option value=""'+(!c.daysOverride?" selected":"")+'>'+escHtml(t("as_parallel"))+' ('+pd+')</option>'+
+    '<option value="5"'+(c.daysOverride===5?" selected":"")+'>5</option>'+
+    '<option value="6"'+(c.daysOverride===6?" selected":"")+'>6</option></select>');
+  var cDays = classDays(c), pPar = c.grade && state.config.parallels[c.grade] ? state.config.parallels[c.grade].periodsByDay : null;
+  var defP = c.isHomeschool ? (state.config.homeschoolPeriodsPerDay||3) : (pPar ? byDayLabel(pPar, cDays) : parallelPeriods(c.grade));
+  var defLbl = c.isHomeschool ? t("as_default") : t("as_parallel");
+  var pss = '<select data-act="class-periods" data-id="'+c.id+'"><option value=""'+(!c.periodsOverride && !c.periodsByDay?" selected":"")+'>'+escHtml(defLbl)+' ('+escHtml(String(defP))+')</option>';
+  for(var pp=1; pp<=10; pp++){ pss += '<option value="'+pp+'"'+(!c.periodsByDay && c.periodsOverride===pp?" selected":"")+'>'+pp+'</option>'; }
+  pss += '<option value="byday"'+(c.periodsByDay?" selected":"")+'>'+escHtml(c.periodsByDay ? byDayLabel(c.periodsByDay, cDays) : uzt("разное по дням…"))+'</option>';
+  h += miniField(t("periods_word"), pss+'</select>');
+  if(c.periodsByDay) h += byDayInputs("class-pday", 'data-id="'+c.id+'"', c.periodsByDay, cDays);
+  h += miniField(t("col_students"), '<input type="number" min="1" max="50" data-act="class-students" data-id="'+c.id+'" value="'+(c.studentCount||"")+'" placeholder="—" style="width:80px">');
+  h += '<label class="chip"><input type="checkbox" data-act="class-homeschool" data-id="'+c.id+'" '+(c.isHomeschool?"checked":"")+'> '+escHtml(t("col_homeschool"))+'</label>';
+  if(isCriterial && (c.grade===5 || c.grade===6)){
+    h += '<label class="chip"><input type="checkbox" data-act="class-jasorat" data-id="'+c.id+'" '+(c.jasorat?"checked":"")+'> '+escHtml(t("jasorat_lbl"))+'</label>';
+  }
+  h += directionFieldsHtml(c);
   if(QARDOSH_LANGS[c.instructionLang]){
     h += miniField(uzt("Образец плана"), '<select data-act="class-qsample" data-id="'+c.id+'">'+
       '<option value="1"'+(c.qardoshSample !== 2 ? " selected" : "")+'>'+escHtml(uzt("с русским языком"))+'</option>'+
@@ -2458,7 +2545,7 @@ var RULE_QUESTIONS = [
     "Приказ МДШО №308: с 2025/2026 учебного года классный час идёт каждый понедельник первым уроком как «Kelajak soati». Ведёт классный руководитель."],
   ["primaryMath", "Математика в 1–4 классах — первым уроком, в понедельник — вторым?",
     "Правило методистов: в начальных классах математика — первый урок, а в понедельник первым идёт «Kelajak soati»."],
-  ["pd", "В школе есть дни профессионального развития учителей?",
+  ["pd", "В школе есть методические дни (дни профразвития) учителей?",
     "ПП-231 от 21.06.2024 и приказ МДШО №246: в свой день учитель предмета не ведёт уроков — например, учителя физики, химии и биологии в среду. Вводятся поэтапно, в первую очередь в опорных школах."]
 ];
 function ruleAnswer(q){ var r = schoolRules(); return q === "pd" ? (r.pd ? !!r.pd.on : undefined) : r[q]; }
@@ -2525,7 +2612,7 @@ function teacherAvailSummary(tc){
   if(!a) return "";
   var own = []; for(var d=0; d<6; d++){ if(tc.daysOff && tc.daysOff[d]) own.push(DAY_NAMES_6[d]); }
   if(own.length) parts.push(uzt("выходной: ") + own.join(", "));
-  if(a.pd !== null) parts.push(uzt("день профразвития: ") + DAY_NAMES_6[a.pd]);
+  if(a.pd !== null) parts.push(uzt("методический день: ") + DAY_NAMES_6[a.pd]);
   if(a.nSlots) parts.push(uzt("закрыто уроков: ") + a.nSlots);
   return parts.join("; ");
 }
@@ -2541,7 +2628,7 @@ function teacherAvailHtml(){
   if(tc){
     var a = teacherAvail()[tc.id], nd = schoolDays(), ns = totalSlotsPerDay();
     if(pdOn()){
-      h += '<div class="field" style="max-width:360px;margin-top:8px;"><label for="pd-teacher">'+escHtml(uzt("День профессионального развития"))+'</label><select id="pd-teacher" data-act="pd-teacher" data-id="'+tc.id+'">'+
+      h += '<div class="field" style="max-width:360px;margin-top:8px;"><label for="pd-teacher">'+escHtml(uzt("Методический день (день профразвития)"))+'</label><select id="pd-teacher" data-act="pd-teacher" data-id="'+tc.id+'">'+
         '<option value=""'+(typeof tc.pdDay !== "number" ? " selected" : "")+'>'+escHtml(uzt("по предметам: ")+(a.pdAuto !== null ? DAY_NAMES_6[a.pdAuto] : uzt("не определён")))+'</option>'+
         '<option value="-1"'+(tc.pdDay === -1 ? " selected" : "")+'>'+escHtml(uzt("нет"))+'</option>'+
         DAY_NAMES_6.map(function(dn, i){ return '<option value="'+i+'"'+(tc.pdDay === i ? " selected" : "")+'>'+escHtml(dn)+'</option>'; }).join("")+'</select></div>';
@@ -2549,7 +2636,7 @@ function teacherAvailHtml(){
     h += '<div class="table-wrap avail-grid"><table><thead><tr><th>'+escHtml(uzt("Урок"))+'</th>';
     for(var d=0; d<nd; d++){
       var own = !!(tc.daysOff && tc.daysOff[d]), pdD = a.pd === d;
-      h += '<th><button type="button" class="avail-day'+(own ? " is-off" : "")+(pdD ? " is-pd" : "")+'" data-act="avail-day" data-id="'+tc.id+'" data-d="'+d+'" aria-pressed="'+own+'" title="'+escAttr(own ? uzt("Выходной — нажмите, чтобы сделать рабочим") : uzt("Нажмите, чтобы сделать выходным"))+'">'+escHtml(DAY_NAMES_6[d])+(own ? '<small>'+escHtml(uzt("выходной"))+'</small>' : pdD ? '<small>'+escHtml(uzt("профразвитие"))+'</small>' : '')+'</button></th>';
+      h += '<th><button type="button" class="avail-day'+(own ? " is-off" : "")+(pdD ? " is-pd" : "")+'" data-act="avail-day" data-id="'+tc.id+'" data-d="'+d+'" aria-pressed="'+own+'" title="'+escAttr(own ? uzt("Выходной — нажмите, чтобы сделать рабочим") : uzt("Нажмите, чтобы сделать выходным"))+'">'+escHtml(DAY_NAMES_6[d])+(own ? '<small>'+escHtml(uzt("выходной"))+'</small>' : pdD ? '<small>'+escHtml(uzt("метод. день"))+'</small>' : '')+'</button></th>';
     }
     h += '</tr></thead><tbody>';
     for(var s=0; s<ns; s++){
@@ -2876,7 +2963,7 @@ function tplLoadMatrix(){
 
 /* ================= СПРАВОЧНИКИ (P1-3) ================= */
 function tplRefs(){
-  var html = '<p style="margin:0 0 10px;"><a href="#" class="back-link" data-act="refs-back">'+escHtml(uzt("← К мастеру"))+'</a></p>';
+  var html = '<p style="margin:0 0 10px;"><a href="#" class="back-link" data-act="refs-back">'+escHtml(uzt("← Назад"))+'</a></p>';
   html += '<h1 class="page-title">'+t('title_refs')+'</h1>';
   html += '<p class="page-sub">'+escHtml(uzt("Учителя, предметы и кабинеты школы. Кто что ведёт — видно на шаге «Нагрузка»."))+'</p>';
   html += '<div class="ref-tabs" role="group">';
@@ -2940,6 +3027,7 @@ function tplCurriculum(){
     }
     html += '<div class="row">';
     html += uzt('<div class="field"><label>Язык обучения</label><span class="muted" style="padding-top:8px; display:block;">')+(LANG_OPTIONS.filter(function(l){return l[0]===cls.instructionLang;})[0]||["","—"])[1]+uzt(' (меняется на вкладке «Классы»)</span></div>');
+    html += directionFieldsHtml(cls);
     html += fieldSelect2wide("cur-firstforeign-"+cls.id, uzt("Первый иностранный язык"), FOREIGN_LANG_OPTIONS.slice(0,3), cls.firstForeignLang, cls.id);
     if(cls.grade>=5 && cls.grade<=9){
       html += uzt('<div class="field"><label>Технология</label><select data-act="cur-technology-select" data-id="')+cls.id+'">';
@@ -2950,14 +3038,11 @@ function tplCurriculum(){
     }
     html += '</div>';
     html += '<div class="row" style="margin-top:10px;">';
-    html += '<button class="btn btn-gold" data-act="cur-autofill" data-id="'+cls.id+uzt('">Заполнить по официальному плану</button>');
+    html += '<button class="btn btn-gold" data-act="cur-autofill" data-id="'+cls.id+'">'+escHtml(uzt("Подставить предметы и часы по приказу"))+'</button>';
     if(state.classes.some(function(o){ return o.id !== cls.id && o.grade === cls.grade && !o.isHomeschool; }) && existingPlanKeys.length)
       html += '<button class="btn" data-act="cur-copy" data-id="'+cls.id+'">'+escHtml(uzt("Скопировать план на параллель"))+'</button>';
     html += '</div>';
-    html += uzt('<footer class="hint">Подставит предметы и часы из официального учебного плана для ')+cls.grade+uzt(' класса')+
-      uzt('. Это полностью заменит текущий список предметов и часов у этого класса — учителей, если они уже были назначены на те же предметы, автозаполнение постарается сохранить.')+
-      (cls.grade>=5 && cls.grade<=9 && (cls.technologyMode||"split")==="split" ? uzt(' Технология для мальчиков и девочек автоматически связывается как групповой урок — оба урока встанут строго в одно и то же время у разных учителей.') : '') +
-      '</footer>';
+    html += '<footer class="hint">'+escHtml(uzt("Нужно, если поменяли направление, язык или класс: список предметов и часы станут как в документе выше. Назначенные учителя сохранятся."))+'</footer>';
   }
   html += '</div>';
 
@@ -4655,6 +4740,10 @@ var EMK_SUBJECT_ALIASES = {
   // 1 класс, 1–2 четверти: «Письмо» — это «Родной язык», «Букварь» — «Чтение» (пояснительная записка к приказу №133)
   "письмо": "Родной язык", "yozuv": "Родной язык", "букварь": "Чтение", "alifbe": "Чтение", "o'qish savodxonligi": "Чтение"
 };
+/* Старое название классного часа (не «Kelajak soati» / «Час будущего»). */
+function emkOldClassHour(n){ return CLASS_HOUR_RE.test(n) && !/kelajak|будущего/i.test(n); }
+/* Название предмета в замечаниях загрузки: классный час — правильным названием. */
+function emkShowName(n){ return emkOldClassHour(String(n)) ? uzt("Kelajak soati (в eMaktab: «") + n + "»)" : n; }
 function emkIsVariantName(n){ return / \(группа \d+\)$/.test(n) || VARIANT_SUFFIXES.some(function(s){ return n.slice(-s.length) === s; }) || / как второй иностранный язык$/.test(n); }
 function emkIsGroupName(n){ return / \(группа \d+\)$/.test(n); }
 /* Предмет справочника для названия из eMaktab: запомненное сопоставление → дословно (рус. или узб.) → синоним →
@@ -4701,6 +4790,14 @@ function emkBuild(){
   // В нагрузке — уроки, проведённые за период (не часы в неделю). Связка без уроков в сетке недели чаще всего
   // замена (предмет в классе ведёт другой учитель) или разовые уроки — такие не показываем, остальное — «проверьте».
   var inLoadOnly = [], inGridOnly = [], loadHidden = 0;
+  // классный час под старым названием («Кл. час», «Ma'naviyat soati») — подсказать правильное: «Kelajak soati» (приказ №308)
+  var oldCH = {};
+  lessons.forEach(function(l){ var n = String(l.full || l.subj); if(emkOldClassHour(n)) (oldCH[n] = oldCH[n] || {})[l.cls] = true; });
+  var oldNames = Object.keys(oldCH);
+  if(oldNames.length){
+    var nCls = dedupe([].concat.apply([], oldNames.map(function(n){ return Object.keys(oldCH[n]); }))).length;
+    notes.push({ kind: "info", text: uzt("Классный час в eMaktab назван «") + oldNames.join("», «") + uzt("» (классов: ") + nCls + uzt("). С 2025/2026 учебного года его правильное название — «Kelajak soati» («Час будущего», приказ МДШО №308): лучше переименовать в eMaktab. В конструктор он загрузится как «Час будущего».") });
+  }
   if(loadUsed){
     var gridTC = {}, gridCS = {};
     lessons.forEach(function(l){
@@ -4716,10 +4813,13 @@ function emkBuild(){
       var k = x.t + "|" + x.subj + "|" + x.cls;
       if(seenLo[k] || gridTC[emkTKey(x.t) + "|" + x.cls + "|" + emkNorm(x.subj)]) return;
       seenLo[k] = true;
-      if(gridCS[x.cls + "|" + emkNorm(x.subj)] || (perHour && x.n < perHour * 0.5)){ loadHidden++; return; }
-      inLoadOnly.push(x.cls + " — " + x.subj + " (" + x.t + ")");
+      // не показываем: замены (предмет в классе ведёт другой учитель), разовые уроки и предметы на 0,5 ч в неделю —
+      // урок раз в две недели (экономика, география 8–9) законно отсутствует в выбранной неделе: за период уроков
+      // меньше ¾ «уроков на 1 час в неделю» (у предмета на 0,5 ч — около половины)
+      if(gridCS[x.cls + "|" + emkNorm(x.subj)] || (perHour && x.n < perHour * 0.75)){ loadHidden++; return; }
+      inLoadOnly.push(x.cls + " — " + emkShowName(x.subj) + " (" + x.t + ")");
     });
-    inGridOnly = dedupe(lessons.filter(function(l){ return !l.full; }).map(function(l){ return l.cls + " — " + l.subj + " (" + l.t + ")"; }));
+    inGridOnly = dedupe(lessons.filter(function(l){ return !l.full; }).map(function(l){ return l.cls + " — " + emkShowName(l.subj) + " (" + l.t + ")"; }));
   } else if(!L){
     notes.push({ kind: "info", text: uzt("Без учебной нагрузки названия предметов останутся обрезанными, как в сетке («Узбекский я...»). Сопоставьте их со справочником ниже или загрузите нагрузку.") });
   }
@@ -4822,8 +4922,8 @@ function emkErrorText(e){
 function emkHtml(via){
   var h = '<div class="emk">', F = emk.files;
   h += '<div class="emk-files">';
-  [["grid", uzt("Сетка расписания по всем учителям"), uzt("Образование → Расписание → вкладка «Учителя» → «Сетка расписания по всем учителям» → Экспорт. Выберите одну обычную неделю четверти — без праздников и замен.")],
-   ["load", uzt("Учебная нагрузка (желательно)"), uzt("Отчёты → Административные → «Учебная нагрузка»: «По предметам» — Да, «По классам» — Да, «Отчётный период» — «Весь год» → Экспорт. Даёт полные названия предметов.")]].forEach(function(x){
+  [["grid", uzt("Сетка расписания по всем учителям"), uzt("emaktab.uz → Образование → Расписание → вкладка «Учителя» → «Сетка расписания по всем учителям» → Экспорт. Выберите одну обычную неделю четверти — без праздников и замен.")],
+   ["load", uzt("Учебная нагрузка (желательно)"), uzt("emaktab.uz → Отчёты → Административные → «Учебная нагрузка»: «По предметам» — Да, «По классам» — Да, «Отчётный период» — «Весь год» → Экспорт. Даёт полные названия предметов.")]].forEach(function(x){
     var f = F[x[0]];
     h += '<div class="emk-file'+(f ? " is-ok" : "")+'"><span class="chk-ic '+(f ? "ok" : "info")+'">'+(f ? ICON_STEP_OK : (x[0] === "grid" ? "A" : "B"))+'</span><div><strong>'+escHtml(x[1])+'</strong>';
     h += f ? '<span class="emk-fname">'+escHtml(f.name)+' · '+escHtml(x[0] === "grid" ? nWord(f.parsed.lessons.length, ["урок","урока","уроков"], "ta dars") : nWord(f.parsed.rows.length, ["строка","строки","строк"], "ta qator"))+'</span>' : '';
@@ -4859,7 +4959,7 @@ function emkHtml(via){
   if(D.inGridOnly.length) notes.push({ kind: "info", text: uzt("Урок стоит в расписании, но его нет в учебной нагрузке: ") + D.inGridOnly.slice(0, 8).join("; ") + (D.inGridOnly.length > 8 ? uzt(" и ещё ") + (D.inGridOnly.length - 8) : "") + "." });
   if(notes.length){
     h += '<div class="emk-notes"><strong>'+escHtml(uzt("Что стоит проверить в eMaktab"))+'</strong> <span class="muted">'+escHtml(uzt("— загрузке это не мешает, можно продолжать."))+'</span><ul>'+notes.map(function(n){ return '<li class="'+(n.kind === "warn" ? "imp-warn" : "")+'">'+escHtml(n.text)+'</li>'; }).join("")+'</ul>';
-    if(D.loadHidden) h += '<p class="muted" style="margin:4px 0 0;font-size:.82rem;">'+escHtml(uzt("Замены и разовые уроки из учебной нагрузки не показаны: ")+D.loadHidden+".")+'</p>';
+    if(D.loadHidden) h += '<p class="muted" style="margin:4px 0 0;font-size:.82rem;">'+escHtml(uzt("Замены, разовые уроки и уроки раз в две недели (0,5 ч) из учебной нагрузки не показаны: ")+D.loadHidden+".")+'</p>';
     h += '</div>';
   }
   // сопоставление предметов
@@ -5026,7 +5126,7 @@ function emkRequestApply(){
     if(!res) return;
     notify(uzt("Загружено из eMaktab: ")+nWord(res.classes, ["класс","класса","классов"], "ta sinf")+", "+nWord(res.teachers, ["учитель","учителя","учителей"], "ta o'qituvchi")+", "+nWord(res.lessons, ["урок","урока","уроков"], "ta dars"), "ok");
     if(via === "bot"){ bot.step = 1; botSave(); }
-    setTab("schedule", via === "bot" ? "bot" : "import");
+    setTab("schedule", via === "bot" ? "bot" : "import", via === "bot");
     render();
   }
   var has = state.teachers.length || state.schedule || state.classes.some(function(c){ return computeUnits(c.id).length; });
@@ -5067,7 +5167,8 @@ function tplImport(){
 }
 /* Приглашение на шаге «Классы и режим», пока ничего не загружено. */
 function emkInviteHtml(){
-  if(state.emaktab) return "";
+  // загружено — та же карточка с «Загрузить заново» (кнопки «Из eMaktab» в шапке нет, 0.11)
+  if(state.emaktab) return '<div class="card emk-invite"><div><strong>'+escHtml(uzt("Загружено из eMaktab"))+'</strong><span class="muted">'+escHtml(new Date(state.emaktab.importedAt).toLocaleDateString()+(state.emaktab.week ? uzt(", неделя ")+state.emaktab.week : "")+". "+uzt("Можно загрузить заново — например, другую неделю или новую четверть."))+'</span></div><button class="btn" data-emk-act="open">'+escHtml(uzt("Загрузить заново"))+'</button></div>';
   return '<div class="card emk-invite"><div><strong>'+escHtml(uzt("Расписание уже есть в eMaktab?"))+'</strong><span class="muted">'+escHtml(uzt("Загрузите его — классы, учителя, нагрузка и сетка заполнятся сами. Вводить вручную не нужно."))+'</span></div><button class="btn btn-primary" data-emk-act="open">'+escHtml(uzt("Загрузить из eMaktab"))+'</button></div>';
 }
 
@@ -5383,7 +5484,7 @@ function checkCardHtml(){
     var c = byId(state.classes, x.classId);
     return checkGo(x.classId, x.d, x.p, className(x.classId) + " · " + DAY_NAMES_6[x.d] + ", " + (classStart(c) + x.p) + uzt("-й урок")) + ' — ' + escHtml(teacherName(x.teacherId));
   });
-  h += checkListHtml(uzt("Урок в день профессионального развития учителя"), R.pdOff, function(x){
+  h += checkListHtml(uzt("Урок в методический день учителя (день профразвития)"), R.pdOff, function(x){
     var c = byId(state.classes, x.classId);
     return checkGo(x.classId, x.d, x.p, className(x.classId) + " · " + DAY_NAMES_6[x.d] + ", " + (classStart(c) + x.p) + uzt("-й урок")) + ' — ' + escHtml(teacherName(x.teacherId));
   });
@@ -6233,18 +6334,15 @@ function fallbackDownload(filename, data){
 /* ---------------- language toggle ---------------- */
 function applyBrandText(){
   var el = document.getElementById("brandText");
-  if(el) el.innerHTML = escHtml(t("brand_title"))+'<span>'+escHtml(t("brand_sub"))+'</span>';
+  if(el) el.textContent = t("brand_title");
   var lt = document.getElementById("langToggle");
   if(lt) lt.textContent = t("lang_toggle");
   var rb = document.getElementById("refsBtn");
   if(rb){ rb.textContent = t("nav_refs"); rb.classList.toggle("is-on", activeTab === "refs"); rb.setAttribute("aria-pressed", activeTab === "refs" ? "true" : "false"); }
-  var eb = document.getElementById("emkBtn");
-  if(eb){ eb.textContent = uzt("Из eMaktab"); eb.classList.toggle("is-on", activeTab === "import"); eb.setAttribute("aria-pressed", activeTab === "import" ? "true" : "false"); }
 }
-document.getElementById("emkBtn").onclick = function(){
-  if(activeTab === "import") setTab(lastWizardTab, "nav"); else setTab("import", "nav");
-  render();
-};
+document.getElementById("modeBot").onclick = function(){ goScreen("bot", "nav"); render(); try{ window.scrollTo(0, 0); }catch(x){} };
+document.getElementById("modeWork").onclick = function(){ goScreen("work", "nav"); render(); try{ window.scrollTo(0, 0); }catch(x){} };
+document.getElementById("modeStrip").onclick = function(e){ var b = e.target.closest && e.target.closest("[data-mode]"); if(!b) return; goScreen("bot", "strip"); render(); try{ window.scrollTo(0, 0); }catch(x){} };
 document.getElementById("refsBtn").onclick = function(){
   if(activeTab === "refs") setTab(lastWizardTab, "nav"); else setTab("refs", "nav");
   render();
@@ -6479,14 +6577,14 @@ function botNext(){
 }
 function botRestart(){
   bot.step = 0; bot.path = null; bot.draft = null; bot.open = true; bot.resume = false; bot.planFilled = null;
-  focusDismissed = false; try{ localStorage.removeItem("tt_focus_off"); }catch(e){}
+  goScreen("bot", "bot");
   if(importPreview && importPreview.via === "bot") importPreview = null;
   botSave();
   track("bot_start", { first: false });
 }
 function botGenerate(){
   requestGenerate("bot", function(ok){
-    if(ok){ bot.step = 5; botSave(); setTab("schedule", "bot"); }
+    if(ok){ bot.step = 5; botSave(); setTab("schedule", "bot", true); }
     render();
   });
 }
@@ -6507,8 +6605,8 @@ function botImportScreen(){
   var S = { q: "", hint: "", left: "", right: "", body: "" };
   var back = '<button class="btn btn-ghost" data-bot-act="back">'+escHtml(uzt("Назад"))+'</button>';
   if(bot.step === 0 || !state.schedule){
-    S.q = uzt("Загрузите расписание из eMaktab");
-    S.hint = uzt("Две выгрузки на всю школу: сетка расписания по учителям и учебная нагрузка. Сначала покажу, что загружу.");
+    S.q = uzt("Загрузите данные из eMaktab");
+    S.hint = "";
     S.body = emkHtml("bot");
     S.left = back;
     return S;
@@ -6521,7 +6619,7 @@ function botImportScreen(){
   // правила школы: ответы сразу учитываются в проверке (0.11, А2)
   S.body += '<div class="bot-rules"><h3 class="emk-h3">'+escHtml(uzt("Правила школы"))+'</h3>'+ruleQuestionsHtml("data-bot-act")+
     (R.rules.length ? '<p class="muted" style="margin:6px 0 0;">'+escHtml(uzt("Расписание нарушает правила школы: ")+R.rules.length+uzt(" — подробно в проверке."))+'</p>' : '')+
-    (ruleAnswer("pd") === true ? '<p class="muted" style="margin:6px 0 0;">'+escHtml(uzt("Дни профразвития — по приказу №246; поменять их и поставить учителю свой день можно на шаге «Расписание» → «Правила школы»."))+'</p>' : '')+'</div>';
+    (ruleAnswer("pd") === true ? '<p class="muted" style="margin:6px 0 0;">'+escHtml(uzt("Методические дни (дни профразвития) — по приказу №246; поменять их и поставить учителю свой день можно в конструкторе на шаге «Расписание» → «Правила школы»."))+'</p>' : '')+'</div>';
   S.left = '<button class="btn btn-ghost" data-bot-act="reload-emk">'+escHtml(uzt("Загрузить другие файлы"))+'</button>';
   S.right = '<button class="btn btn-primary" data-bot-act="goto" data-v="schedule">'+escHtml(uzt("Открыть расписание и проверку"))+'</button>';
   return S;
@@ -6620,7 +6718,7 @@ function botScreen(){
     h += '</div>';
     // правила школы — до составления, чтобы генератор их учёл (0.11, А2)
     h += '<div class="bot-rules"><h3 class="emk-h3">'+escHtml(uzt("Правила школы"))+'</h3>'+ruleQuestionsHtml("data-bot-act")+
-      (ruleAnswer("pd") === true ? '<p class="muted" style="margin:6px 0 0;">'+escHtml(uzt("Дни профразвития — по приказу №246; поменять их и поставить учителю свой день можно на шаге «Расписание» → «Правила школы»."))+'</p>' : '')+'</div>';
+      (ruleAnswer("pd") === true ? '<p class="muted" style="margin:6px 0 0;">'+escHtml(uzt("Методические дни (дни профразвития) — по приказу №246; поменять их и поставить учителю свой день можно в конструкторе на шаге «Расписание» → «Правила школы»."))+'</p>' : '')+'</div>';
     S.left = back;
     S.right = '<button class="btn btn-primary" data-bot-act="gen"'+(is.errors.length?" disabled":"")+'>'+escHtml(uzt("Составить расписание"))+'</button>';
   } else {
@@ -6639,42 +6737,32 @@ function botScreen(){
   S.body = h;
   return S;
 }
-/* Фокус на старте (0.11, А1): пока не выбран путь, виден только бот, остальное размыто — чтобы прочитали вопрос.
-   «Осмотреться без подсказки» снимает фокус насовсем; «Начать заново» в боте возвращает его. */
-var focusDismissed = false;
-try{ focusDismissed = localStorage.getItem("tt_focus_off") === "1"; }catch(e){}
-function focusStartOn(){ return bot.open && !bot.path && !focusDismissed; }
+/* Помощник — отдельный экран (0.11, пилот, раздел 8, п. 14; заменяет «фокус на старте» и свёрнутую полоску).
+   Внизу каждого шага — «Настроить подробно →»: нужный шаг конструктора; помощник помнит свой шаг, в конструкторе
+   сверху полоска «Вернуться в помощник». Кому ничего не нужно подробно — «Открыть конструктор». */
+/* Куда ведёт «Настроить подробно» с текущего шага помощника. */
+function botDetailTab(){
+  if(bot.path === "import") return bot.step === 0 || !state.schedule ? "import" : "schedule";
+  return ["classes", "classes", "refs", "load", "schedule", "schedule"][Math.min(bot.step, 5)];
+}
 function renderBot(){
   var el = document.getElementById("bot");
   if(!el) return;
   availCache = null;
   if(!bot.draft) botInitDraft();
-  var fOn = focusStartOn();
-  try{
-    document.body.classList.toggle("focus-start", fOn);
-    ["steps", "main"].forEach(function(id){ var n = document.getElementById(id); if(n){ if(fOn) n.setAttribute("aria-hidden", "true"); else n.removeAttribute("aria-hidden"); } });
-  }catch(e){}
-  if(fOn && !bot.focusTracked){ bot.focusTracked = true; track("focus_start", { action: "shown" }); }
-  if(bot.open && !bot.resume && !bot.startTracked){ bot.startTracked = true; track("bot_start", { first: true }); }
-  var h, nSteps = botSteps().length;
-  if(!bot.open || bot.resume){
-    var txt = !bot.path ? uzt("Расписание уже есть в eMaktab? Загрузите его — или составьте с нуля.")
-      : bot.resume ? uzt("Вы остановились на шаге ")+(bot.step+1)+uzt(" из ")+nSteps+" — «"+botStepLabel(bot.step)+uzt("». Продолжим с того же места?")
-      : bot.step >= botDoneStep() ? (bot.path === "import" ? uzt("Расписание загружено из eMaktab. Загрузить заново можно в любой момент.") : uzt("Первое расписание составлено. Настройку можно пройти заново."))
-      : uzt("Шаг ")+(bot.step+1)+uzt(" из ")+nSteps+" — «"+botStepLabel(bot.step)+"»";
-    h = '<section class="bot bot-slim" aria-label="'+escAttr(uzt("Быстрая настройка"))+'"><strong>'+escHtml(uzt("Быстрая настройка"))+'</strong><span class="bot-slim-text">'+escHtml(txt)+'</span>';
-    h += bot.resume ? '<button class="btn btn-sm" data-bot-act="restart">'+escHtml(uzt("Начать заново"))+'</button><button class="btn btn-sm btn-primary" data-bot-act="open">'+escHtml(uzt("Продолжить"))+'</button>'
-      : '<button class="btn btn-sm btn-primary" data-bot-act="open">'+escHtml(!bot.path || bot.step >= botDoneStep() ? uzt("Открыть") : uzt("Продолжить"))+'</button>';
-    el.innerHTML = h + '</section>';
-    return;
-  }
-  var sub = !bot.path ? uzt("Начнём с главного вопроса.") : bot.path === "import" ? uzt("Загрузка из eMaktab — и проверка покажет конфликты и окна.") : uzt("5 шагов — и первое расписание готово. Всё можно поправить потом в мастере.");
-  h = '<section class="bot" aria-label="'+escAttr(uzt("Быстрая настройка"))+'"><div class="bot-head"><div class="bot-title">'+escHtml(uzt("Быстрая настройка"))+' <span>'+escHtml(sub)+'</span></div>';
-  h += '<div class="bot-head-actions"><button class="btn btn-sm" data-bot-act="restart">'+escHtml(uzt("Начать заново"))+'</button><button class="btn btn-sm" data-bot-act="toggle">'+escHtml(uzt("Свернуть"))+'</button></div></div>';
+  if(ui.screen === "bot" && !bot.startTracked){ bot.startTracked = true; track("bot_start", { first: true }); }
+  var h;
+  var sub = !bot.path ? uzt("Проверю ваше расписание или составлю новое") : bot.path === "import" ? uzt("Загрузка из eMaktab — и проверка покажет конфликты и окна.") : uzt("5 шагов — и первое расписание готово. Всё можно поправить потом в конструкторе.");
+  h = '<section class="bot" aria-label="'+escAttr(uzt("Помощник"))+'"><div class="bot-head"><div class="bot-title">'+escHtml(uzt("Помощник"))+' <span>'+escHtml(sub)+'</span></div>';
+  // на первом экране «Открыть конструктор →» — внизу карточки, не дублируем в шапке
+  h += '<div class="bot-head-actions">'+(bot.path ? '<button class="btn btn-sm" data-bot-act="restart">'+escHtml(uzt("Начать заново"))+'</button><button class="btn btn-sm" data-bot-act="to-work">'+escHtml(uzt("Открыть конструктор →"))+'</button>' : '')+'</div></div>';
   if(!bot.path){
-    h += '<div class="bot-card"><div><h2 class="bot-q">'+escHtml(uzt("Расписание уже есть в eMaktab?"))+'</h2><p class="bot-hint">'+escHtml(uzt("Если да — загрузите его: классы, учителя и нагрузка заполнятся сами, а проверка сразу покажет конфликты и окна. Если нет — составим с нуля за 5 шагов."))+'</p></div>';
-    h += '<div class="bot-path"><button class="btn btn-primary" data-bot-act="path" data-v="import">'+escHtml(uzt("Да, загружу из eMaktab"))+'</button><button class="btn" data-bot-act="path" data-v="scratch">'+escHtml(uzt("Нет, начну с нуля"))+'</button></div>';
-    if(focusStartOn()) h += '<div class="focus-hint"><span>'+escHtml(uzt("Начните отсюда — остальной конструктор откроется после ответа."))+'</span><button type="button" class="link-btn" data-bot-act="focus-off">'+escHtml(uzt("Осмотреться без подсказки"))+'</button></div>';
+    // онбординг: под каждым ответом — что будет дальше (решение пользователя 2026-09-29, вариант 1)
+    h += '<div class="bot-card"><div><h2 class="bot-q">'+escHtml(uzt("Расписание уже есть в eMaktab?"))+'</h2>'+
+      '<p class="bot-hint"><strong>'+escHtml(uzt("Да"))+'</strong> — '+escHtml(uzt("загрузите две выгрузки из eMaktab. Я проверю ваше расписание: конфликты учителей, окна, кабинеты. Потом можно внести изменения и перенести их в eMaktab."))+'</p>'+
+      '<p class="bot-hint"><strong>'+escHtml(uzt("Нет"))+'</strong> — '+escHtml(uzt("составлю расписание заново за 5 шагов: школа и классы → режим → учителя → учебный план → готовое расписание."))+'</p></div>';
+    h += '<div class="bot-path"><button class="btn btn-primary" data-bot-act="path" data-v="import">'+escHtml(uzt("Да, проверить моё расписание"))+'</button><button class="btn" data-bot-act="path" data-v="scratch">'+escHtml(uzt("Нет, составить заново"))+'</button></div>';
+    h += '<div class="focus-hint"><span>'+escHtml(uzt("Всё можно поправить вручную в конструкторе"))+'</span><button type="button" class="link-btn" data-bot-act="to-work">'+escHtml(uzt("Открыть конструктор →"))+'</button></div>';
     h += '</div></section>';
     el.innerHTML = h;
     return;
@@ -6686,15 +6774,16 @@ function renderBot(){
     h += '<li class="'+cls+'"'+(i === bot.step ? ' aria-current="step"' : '')+'><span class="bar"></span><span class="lbl">'+(i < bot.step ? ICON_STEP_OK : "")+(i+1)+'. '+escHtml(uzt(s[1]))+'</span></li>';
   });
   h += '</ol><div class="bot-card"><div><h2 class="bot-q">'+escHtml(S.q)+'</h2>'+(S.hint ? '<p class="bot-hint">'+escHtml(S.hint)+'</p>' : '')+'</div>'+S.body;
-  h += '<div class="bot-foot"><div class="row">'+S.left+'</div><div class="row">'+S.right+'</div></div></div></section>';
+  h += '<div class="bot-foot"><div class="row">'+S.left+'</div><div class="row">'+S.right+'</div></div>';
+  h += '<div class="bot-detail"><button type="button" class="link-btn" data-bot-act="goto" data-v="'+botDetailTab()+'">'+escHtml(uzt("Настроить подробно в конструкторе →"))+'</button></div></div></section>';
   el.innerHTML = h;
 }
 function onBotClick(e){
   var tg = e.target && e.target.closest ? e.target.closest("[data-bot-act]") : null;
   if(!tg || tg.tagName === "SELECT" || tg.tagName === "INPUT") return;
   var act = tg.getAttribute("data-bot-act"), v = tg.getAttribute("data-v"), d = bot.draft;
-  if(act === "toggle"){ bot.open = !bot.open; bot.resume = false; botSave(); renderBot(); }
-  else if(act === "open"){ bot.open = true; bot.resume = false; botSave(); renderBot(); }
+  if(act === "toggle" || act === "to-work"){ goScreen("work", "bot"); render(); try{ window.scrollTo(0, 0); }catch(x){} }
+  else if(act === "open"){ bot.open = true; bot.resume = false; botSave(); goScreen("bot", "nav"); render(); }
   else if(act === "restart"){ botRestart(); render(); }
   else if(act === "type"){ d.type = v; renderBot(); }
   else if(act === "cnt"){ var g = parseInt(tg.getAttribute("data-g"),10); d.counts[g] = Math.max(0, Math.min(15, d.counts[g] + parseInt(v,10))); renderBot(); }
@@ -6704,7 +6793,7 @@ function onBotClick(e){
   else if(act === "path"){ bot.path = v; bot.step = 0; botSave(); track("bot_step", { step: "path_" + v }); renderBot(); }
   else if(act === "reload-emk"){ bot.step = 0; botSave(); renderBot(); }
   else if(act === "rule-q"){ setRuleAnswer(tg.getAttribute("data-q"), v === "1"); render(); }
-  else if(act === "focus-off"){ focusDismissed = true; try{ localStorage.setItem("tt_focus_off", "1"); }catch(x){} track("focus_start", { action: "dismiss" }); render(); }
+
   else if(act === "gen") botGenerate();
   else if(act === "goto" || act === "issue"){
     var tab = act === "issue" ? tg.getAttribute("data-tab") : v;
@@ -6712,7 +6801,7 @@ function onBotClick(e){
     if(act === "issue") goToIssue(tab, tg.getAttribute("data-id") || null, "bot");
     else { if(tab === "load") loadMode = "parallel"; setTab(tab, "bot"); }
     render();
-    try{ document.getElementById("steps").scrollIntoView({ behavior: "smooth" }); }catch(x){}
+    try{ window.scrollTo(0, 0); }catch(x){}
   }
 }
 function onBotChange(e){
@@ -6744,6 +6833,8 @@ window.addEventListener("unhandledrejection", function(){ track("js_error", { ki
 (function(){ var sb = document.getElementById("storageBar"); if(sb) sb.addEventListener("click", onStorageBarClick); })();
 initTabGuard();
 track("app_open", { first_visit: analyticsCtx.first_visit, storage_ok: !storage.error, has_schedule: !!state.schedule, classes: state.classes.length });
+ui.screen = screenInitial();
+try{ history.replaceState(null, "", screenHash()); }catch(e){}
 render();
 renderStorageBar();
 initCloudSync();
