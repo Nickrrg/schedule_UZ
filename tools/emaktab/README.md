@@ -15,7 +15,7 @@
 1. `py -m http.server 8767 --bind 127.0.0.1` из корня проекта (конфигурация `static` в `.claude/launch.json`).
 2. Открыть любую страницу на `http://localhost:8767/`, в консоли подключить SheetJS и `tools/emaktab/analyze.js`:
    ```js
-   await new Promise(r=>{ const s=document.createElement('script'); s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'; s.onload=r; document.head.appendChild(s); });
+   await new Promise(r=>{ const s=document.createElement('script'); s.src='https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js'; s.onload=r; document.head.appendChild(s); });
    await new Promise(r=>{ const s=document.createElement('script'); s.src='/tools/emaktab/analyze.js'; s.onload=r; document.head.appendChild(s); });
    const grid = An.parseGrid(await An.wb('/дано/<сетка>.xls')), load = An.parseLoad(await An.wb('/дано/<нагрузка>.xls'));
    An.fullNames(grid, load); An.stats(grid);
