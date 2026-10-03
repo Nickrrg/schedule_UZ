@@ -351,6 +351,12 @@
       check("T-E-10", "плитки: 2 класса с изменениями, 1 ячейка, 1 замена педагога, 0 из 2", tiles === "2 | 1 | 1 | 0 из 2", tiles);
       trRow("5-A").click(); T("tr-scheme-btn").click();
       check("T-E-12", "схема класса в формате eMaktab, изменённая ячейка выделена", !!T("tr-scheme").querySelector("td.is-changed") && /Весь класс/.test(T("tr-scheme").textContent));
+      change(T("tr-scheme-pick"), cls("5-A").id);
+      check("T-E-12", "0.12.1: «Посмотреть расписание класса» — класс с изменениями: схема под списком, схема в карточке класса не задета",
+        T("tr-any").open && !!T("tr-any").querySelector('[data-test="tr-any-scheme"]') && !!T("card-tr-class").querySelector('[data-test="tr-scheme"]'));
+      trRow("6-A").click(); change(T("tr-scheme-pick"), cls("5-A").id);
+      check("T-E-12", "0.12.1: открыт другой класс — схема выбранного всё равно под списком", !!T("tr-any").querySelector('[data-test="tr-any-scheme"]'));
+      change(T("tr-scheme-pick"), ""); trRow("5-A").click();
       T("tr-mark").click();
       check("T-E-12", "«перенесено» запомнено, отметка в списке", !!(st().emaktab.transferred || {})[cls("5-A").id] && tileV("tr-done") === "1 из 2" && trRow("5-A").querySelector('[data-test="tr-check"]').classList.contains("on") && /Перенесено/.test(T("tr-mark").textContent));
       var printed = null; W.print = function(){ printed = D.getElementById("print").innerHTML; };
@@ -1469,8 +1475,11 @@
       nav("grid");
       check("T-U-05", "нагрузка без учителей — оранжевый отрезок; сетка составлена", T("crumb-load").className === "w" && T("crumb-grid").className === "c", T("crumb-load").className);
       var bClasses = T("nav-classes").querySelector('[data-test="badge"]'), bLoad = T("nav-load").querySelector('[data-test="badge"]'), bSchool = T("nav-school").querySelector('[data-test="badge"]');
-      check("T-U-05", "бейджи меню: школа ✓, классов 11, нагрузка — оранжевое число предметов без учителя",
-        bSchool && bSchool.textContent === "✓" && bClasses && bClasses.textContent === "11" && bLoad && bLoad.classList.contains("w") && +bLoad.textContent > 0, (bSchool && bSchool.textContent) + "/" + (bClasses && bClasses.textContent) + "/" + (bLoad && bLoad.textContent));
+      check("T-U-05", "бейджи меню: школа без ✓ (на правила не ответили), классов 11, нагрузка — оранжевое число предметов без учителя",
+        !bSchool && T("crumb-school").className !== "d" && bClasses && bClasses.textContent === "11" && bLoad && bLoad.classList.contains("w") && +bLoad.textContent > 0, (bSchool && bSchool.textContent) + "/" + (bClasses && bClasses.textContent) + "/" + (bLoad && bLoad.textContent));
+      nav("school"); T("rule-sw-kelajak").click();
+      bSchool = T("nav-school").querySelector('[data-test="badge"]');
+      check("T-U-05", "ответ на правило школы — шаг «Школа и правила» готов (✓)", bSchool && bSchool.textContent === "✓", bSchool && bSchool.textContent);
 
       // меню «⋯»: копия, восстановление, «Стереть всё» (переехали из «Выгрузки»)
       check("T-U-06", "меню «⋯» закрыто", T("more-menu").hidden);
@@ -1672,6 +1681,42 @@
       function part(re){ var i = z.FullPaths.findIndex(function(p){ return re.test(p); }); return i < 0 ? "" : new TextDecoder().decode(z.FileIndex[i].content); }
       var styles = part(/styles\.xml$/), sh = part(/worksheets\/sheet2\.xml$/);
       check("T-10-12", "Excel: перенос строк, выравнивание по верху, ширина колонок и высота строк заданы", /wrapText="(1|true)"/.test(styles) && /<cols>/.test(sh) && /customHeight="1"/.test(sh), sh.slice(0, 120));
+    }],
+    ["T-U-20", "0.12.1: мелкие правки по замечаниям к 0.12.0", async function(){
+      await fresh(); await botSchool(2); botGen();
+      T("mode-work").click();
+      // «Школа и правила»: уроки школы — текст, не поле; переход на «Классы»
+      nav("school");
+      check("T-U-20", "«Уроков в школе» — простой текст, рядом «Изменить на экране «Классы» →»", T("school-slots").tagName === "B" && !T("school-slots").classList.contains("inp") && /Классы/.test(T("school-slots-go").textContent));
+      T("school-slots-go").click();
+      check("T-U-20", "кнопка открывает «Классы»", nav() === "classes" && !!D.querySelector('[data-test="page-classes"]'), nav());
+      // «Классы»: панель класса в конце длинного списка видна на экране
+      var last = T("cls-row-11-B");
+      last.scrollIntoView(); last.click();
+      await sleep(30);
+      var pr = T("panel-class").getBoundingClientRect();
+      check("T-U-20", "панель класса из конца списка — в окне, а не над ним", pr.top >= 0 && pr.top < W.innerHeight, "top " + Math.round(pr.top) + " / окно " + W.innerHeight);
+      W.scrollTo(0, 0);
+      // «Сетка»: выделения текста в ячейках нет; перетаскивание закрывает карточку урока
+      nav("grid");
+      check("T-U-20", "текст ячеек сетки не выделяется", W.getComputedStyle(D.querySelector('[data-test="grid-table"] .cell')).userSelect === "none");
+      var a = lessonCell(0, true), b = lessonCell(2, true);
+      openCell(a.d, a.p);
+      var dt = new W.DataTransfer();
+      var popEv = new W.DragEvent("dragstart", { bubbles: true, cancelable: true, dataTransfer: dt });
+      T("pop-lesson").dispatchEvent(popEv);
+      check("T-U-20", "из карточки урока перетаскивание не начинается", popEv.defaultPrevented && !!D.querySelector('[data-test="grid-pop"]'));
+      cellTd(b.d, b.p).dispatchEvent(new W.DragEvent("dragstart", { bubbles: true, dataTransfer: dt }));
+      check("T-U-20", "начало перетаскивания урока закрывает карточку", !D.querySelector('[data-test="grid-pop"]') && !D.querySelector('[data-test="grid-table"] .cell.sel'));
+      cellTd(a.d, a.p).dispatchEvent(new W.DragEvent("dragover", { bubbles: true, cancelable: true, dataTransfer: dt }));
+      cellTd(a.d, a.p).dispatchEvent(new W.DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: dt }));
+      check("T-U-20", "после обмена карточка не появляется на старом месте", !D.querySelector('[data-test="grid-pop"]'));
+      // диалог закрывается по Esc как «Отмена»
+      var n0 = st().classes.length;
+      openClass("9-B"); T("cls-del").click();
+      check("T-U-20", "вопрос «Удалить класс» открыт", !T("dialog").hidden);
+      D.dispatchEvent(new W.KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+      check("T-U-20", "Esc закрывает диалог как «Отмена» — класс не удалён", T("dialog").hidden && st().classes.length === n0, st().classes.length + "/" + n0);
     }]
   ];
 

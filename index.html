@@ -409,7 +409,7 @@ td.focus-cell{outline:3px solid var(--accent);outline-offset:-3px;}
 .inh{color:var(--muted-2);}
 .tag{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:600;background:#F1F4F8;color:var(--ink-soft);white-space:nowrap;}
 .tag.diff{background:var(--diff-bg);color:var(--diff);} .tag.ok{background:var(--ok-bg);color:var(--ok);} .tag.w{background:var(--warn-bg);color:var(--warn);} .tag.i{background:var(--accent-soft);color:var(--accent);}
-.side-panel{background:var(--surface);border-radius:var(--radius-lg);box-shadow:var(--card-shadow);padding:18px 18px 20px;align-self:start;position:sticky;top:70px;}
+.side-panel{background:var(--surface);border-radius:var(--radius-lg);box-shadow:var(--card-shadow);padding:18px 18px 20px;max-height:calc(100vh - 80px);overflow-y:auto;}
 .side-panel .ph2{display:flex;align-items:center;gap:8px;margin-bottom:4px;}
 .side-panel h4{margin:0;font-size:17px;}
 .side-panel .hint{font-size:12.5px;margin:0 0 14px;}
@@ -445,6 +445,7 @@ td.focus-cell{outline:3px solid var(--accent);outline-offset:-3px;}
 .segs button{padding:6px 11px;border-radius:9px;border:1px solid var(--border-strong);background:var(--surface);color:var(--ink);font-size:13px;font-weight:600;}
 .segs button.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);}
 .inp{border:1px solid var(--border-strong);border-radius:10px;padding:8px 11px;font-size:13.5px;}
+.slots-val{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;font-size:15px;}
 .inp.inh{color:var(--ink-soft);background:var(--hover);border-style:dashed;}
 .chips{display:flex;gap:6px;flex-wrap:wrap;}
 .bell-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px 10px;margin-bottom:10px;}
@@ -462,6 +463,7 @@ td.focus-cell{outline:3px solid var(--accent);outline-offset:-3px;}
 @media (max-width:900px){ .cols2{grid-template-columns:minmax(0,1fr);} }
 /* 0.12 (Э3): «Классы» — таблица по параллелям, панель справа (прототип: .body.withpanel, .bar, .search, .caret) */
 .kon.withpanel{grid-template-columns:220px minmax(0,1fr) 340px;}
+.kpanel{position:sticky;top:70px;align-self:start;} /* прилипает обёртка панели: самой панели внутри неё прилипать некуда */
 .kpanel[hidden]{display:none;}
 .bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;}
 .search{display:flex;align-items:center;gap:8px;border:1px solid var(--border-strong);border-radius:10px;padding:0 11px;color:var(--ink-soft);font-size:13px;min-width:240px;background:var(--surface);}
@@ -563,7 +565,7 @@ table.g{width:100%;border-collapse:separate;border-spacing:0;table-layout:fixed;
 .g td.off-cell{background:transparent;}
 .g td.focus-cell{outline:none;}
 .g td.focus-cell .cell{box-shadow:0 0 0 3px var(--alarm);}
-.cell{border-radius:9px;padding:6px 8px;min-height:48px;background:var(--hover);position:relative;cursor:pointer;}
+.cell{border-radius:9px;padding:6px 8px;min-height:48px;background:var(--hover);position:relative;cursor:pointer;-webkit-user-select:none;user-select:none;} /* перетаскивание урока не выделяет текст */
 .cell.cat-lang{--grp:var(--c-lang);--gbg:var(--c-lang-bg);} .cell.cat-math{--grp:var(--c-math);--gbg:var(--c-math-bg);}
 .cell.cat-science{--grp:var(--c-science);--gbg:var(--c-science-bg);} .cell.cat-social{--grp:var(--c-social);--gbg:var(--c-social-bg);}
 .cell.cat-arts{--grp:var(--c-arts);--gbg:var(--c-arts-bg);} .cell.cat-pe{--grp:var(--c-pe);--gbg:var(--c-pe-bg);} .cell.cat-tech{--grp:var(--c-tech);--gbg:var(--c-tech-bg);}
@@ -1370,7 +1372,7 @@ var UZ_TR_P3 = {
   "Рекомендации: правила школы": "Tavsiyalar: maktab qoidalari",
   "Смена учителя на весь период": "Butun davr uchun o'qituvchini almashtirish",
   "Схема класса": "Sinf sxemasi",
-  "Схема любого класса в формате eMaktab": "Istalgan sinf sxemasi eMaktab formatida",
+  "Посмотреть расписание класса, как в eMaktab": "Sinf jadvalini eMaktabdagidek ko'rish",
   "У всех классов «Kelajak soati» уже есть.": "Barcha sinflarda «Kelajak soati» allaqachon bor.",
   "Урок в методический день учителя (день профразвития)": "O'qituvchining metodik kunidagi dars (kasbiy rivojlanish kuni)",
   "Урок, который у учителя закрыт": "O'qituvchida yopiq bo'lgan dars",
@@ -1864,6 +1866,7 @@ var UZ_TR_E12 = {
   " ч в неделю, эти уроки останутся без учителя": " soat haftasiga, bu darslar o'qituvchisiz qoladi",
   "кабинет в уроках сетки — ": "jadval to'ridagi darslarda xona — ",
   "Вернуть нельзя. Если сомневаетесь — сначала «Сохранить копию на компьютер» в меню «⋯».": "Qaytarib bo'lmaydi. Ikkilansangiz — avval «⋯» menyusida «Nusxani kompyuterga saqlash».",
+  "Изменить на экране «Классы»": "«Sinflar» ekranida o'zgartirish",
   "Закреплён за классом": "Sinfga biriktirilgan",
   "— не закреплён": "— biriktirilmagan",
   " — сейчас кабинет ": " — hozir xona ",
@@ -1905,7 +1908,7 @@ function applyLangConstants(){
    загрузится (CSP), события копятся в памяти — window.__ttEvents для отладки.
    На своём домене с заполненным ID события уходят как JS-цели "tt_<имя>". */
 var METRIKA_COUNTER_ID = null;
-var APP_VERSION = "0.12.0";
+var APP_VERSION = "0.12.1";
 var trackQueue = [];
 /* Каталог событий (ADR-7, ТЗ ФТ-13): имя → разрешённые параметры и когда срабатывает.
    Ответ аналитика ложится сюда и в одну строку в месте вызова. Параметры, которых нет
@@ -2721,7 +2724,8 @@ function checkProblemCount(R){
 function stepStatus(){
   var r = {};
   var noGrade = state.classes.filter(function(c){ return !c.grade; }).length;
-  r.school = state.classes.length ? { st: "done" } : { st: "todo" };
+  // готово по действиям завуча (ответы на правила школы), а не по классам: после сброса классы 1-A…11-A уже есть
+  r.school = state.classes.length && RULE_QUESTIONS.some(function(q){ return ruleAnswer(q[0]) !== undefined; }) ? { st: "done" } : { st: "todo" };
   r.classes = !state.classes.length ? { st: "todo", note: uzt("нет классов") }
     : noGrade ? { st: "warn", note: nWord(noGrade, ["класс без параллели", "класса без параллели", "классов без параллели"], "ta sinf parallelsiz") }
     : { st: "done", note: nWord(state.classes.length, ["класс", "класса", "классов"], "ta sinf") };
@@ -3227,7 +3231,8 @@ function schoolMainCard(){
         var on = type === o[0];
         return '<button type="button" class="'+(on ? "on" : "")+'" aria-pressed="'+on+'" data-act="school-type" data-v="'+o[0]+'" data-test="school-type-'+o[0]+'">'+escHtml(o[1])+'</button>';
       }).join("") + '</div></div>';
-  b += '<div class="ui-field"><label>'+escHtml(uzt("Уроков в школе"))+'</label><div class="inp inh" data-test="school-slots">'+escHtml(ns > 1 ? "1–" + ns : String(ns))+'</div>'
+  b += '<div class="ui-field"><label>'+escHtml(uzt("Уроков в школе"))+'</label><div class="slots-val"><b data-test="school-slots">'+escHtml(ns > 1 ? "1–" + ns : String(ns))+'</b>'
+    + '<button type="button" class="link-btn" data-act="kon-go" data-id="classes" data-test="school-slots-go">'+escHtml(uzt("Изменить на экране «Классы»"))+' →</button></div>'
     + '<p class="hint" style="margin:5px 0 0;">'+escHtml(uzt("Считается по параллелям: с какого урока и сколько уроков — на экране «Классы»."))+'</p></div>';
   var jas = state.classes.filter(function(c){ return c.grade === 5 || c.grade === 6; }).sort(compareClasses);
   b += '<div class="ui-field" style="margin:0;"><label>'+escHtml(uzt("Классы «Жасорат»"))+'</label>';
@@ -4675,7 +4680,8 @@ function renderTeacherScheduleView(){
    по каждому классу — «добавить / заменить / убрать» с названиями, как в eMaktab; смена учителя у предмета
    класса на всех его уроках без переноса уроков — одна операция «Замена педагога». Отметка «перенесено»
    запоминает, какой список изменений перенесён: изменится список — отметка снимется сама. */
-var transferClassId = null; // класс, чья схема показана в формате eMaktab
+var transferClassId = null; // класс, чья схема показана в формате eMaktab (кнопка «Схема … целиком →»)
+var transferAnyId = null;   // класс из «Посмотреть расписание класса, как в eMaktab» — его схема всегда там, под списком
 function trPlanExt(classId, sid){ var e = (state.curriculum[classId] || {})[sid]; return e && e.ext ? e.ext : null; }
 function trSubject(classId, sid){
   var ext = trPlanExt(classId, sid);
@@ -4817,10 +4823,10 @@ function tplTransfer(){
   }
   var same = diff.classes.filter(function(x){ return !x.changes.length && !x.repl.length; });
   if(same.length && diff.changed.length) h += '<p class="muted" data-test="tr-same">'+escHtml(uzt("Без изменений: ")+same.map(function(x){ return trClassName(byId(state.classes, x.classId)); }).join(", "))+'</p>';
-  var other = transferClassId && !diff.changed.some(function(x){ return x.classId === transferClassId; }) ? byId(state.classes, transferClassId) : null;
-  h += '<details class="avail" style="margin-top:10px;"'+(other ? " open" : "")+' data-test="tr-any"><summary>'+escHtml(uzt("Схема любого класса в формате eMaktab"))+'</summary><div class="field" style="max-width:260px;margin-top:8px;"><select data-act="tr-scheme-pick" data-test="tr-scheme-pick" aria-label="'+escAttr(uzt("Класс"))+'"><option value="">—</option>'+
-    state.classes.map(function(cc){ return '<option value="'+cc.id+'"'+(cc.id === transferClassId ? " selected" : "")+'>'+escHtml(trClassName(cc))+'</option>'; }).join("")+'</select></div>'
-    + (other ? '<div data-test="tr-scheme">'+trSchemeHtml(other, diff)+'</div>' : '') + '</details>';
+  var other = transferAnyId ? byId(state.classes, transferAnyId) : null;
+  h += '<details class="avail" style="margin-top:10px;"'+(other ? " open" : "")+' data-test="tr-any"><summary>'+escHtml(uzt("Посмотреть расписание класса, как в eMaktab"))+'</summary><div class="field" style="max-width:260px;margin-top:8px;"><select data-act="tr-scheme-pick" data-test="tr-scheme-pick" aria-label="'+escAttr(uzt("Класс"))+'"><option value="">—</option>'+
+    state.classes.map(function(cc){ return '<option value="'+cc.id+'"'+(other && cc.id === other.id ? " selected" : "")+'>'+escHtml(trClassName(cc))+'</option>'; }).join("")+'</select></div>'
+    + (other ? '<div data-test="tr-any-scheme">'+trSchemeHtml(other, diff)+'</div>' : '') + '</details>';
   return uiPage(uzt("Перенос в eMaktab"), sub, acts, h, { test: "transfer" });
 }
 /* Отметка «перенесено» запоминает список изменений класса (хеш): изменится список — отметка снимется сама. */
@@ -7472,8 +7478,17 @@ function onClick(e){
 var dragSrc = null;
 function dragCell(e){ return e.target && e.target.closest ? e.target.closest('td[data-drop="1"]') : null; }
 function onCellDragStart(e){
+  // из открытой карточки урока не перетаскиваем (там списки); перетаскивание урока карточку закрывает —
+  // без перерисовки, иначе браузер прервёт перетаскивание
+  if(e.target.closest && e.target.closest(".pop")){ e.preventDefault(); dragSrc = null; return; }
   var td = dragCell(e);
   if(!td){ dragSrc = null; return; }
+  if(gridPop){
+    gridPop = null;
+    var main = document.getElementById("main");
+    Array.prototype.forEach.call(main.querySelectorAll(".g .pop"), function(el){ el.parentNode.removeChild(el); });
+    Array.prototype.forEach.call(main.querySelectorAll(".g .cell.sel"), function(el){ el.classList.remove("sel"); });
+  }
   dragSrc = { c: td.getAttribute("data-class"), d: parseInt(td.getAttribute("data-day"),10), p: parseInt(td.getAttribute("data-period"),10) };
   try{ e.dataTransfer.effectAllowed = "move"; e.dataTransfer.setData("text/plain", "cell"); }catch(x){}
 }
@@ -7623,7 +7638,7 @@ function onChange(e){
     else{ teacher.subjects = teacher.subjects.filter(function(s){return s!==subjId;}); }
     render();
   }
-  else if(act==="tr-scheme-pick"){ transferClassId = t.value || null; render(); }
+  else if(act==="tr-scheme-pick"){ transferAnyId = t.value || null; render(); }
   else if(act==="pd-day"){
     var pr = rulesMut(); pr.pd = pr.pd || { on: true, days: null }; pr.pd.days = pr.pd.days || {};
     pr.pd.days[t.getAttribute("data-g")] = parseInt(t.value, 10);
@@ -7860,6 +7875,13 @@ document.addEventListener("click", function(e){
   if(moreOpen && !document.getElementById("more").contains(e.target)) setMoreOpen(false);
 });
 document.addEventListener("keydown", function(e){ if(moreOpen && e.key === "Escape") setMoreOpen(false); });
+// Esc в открытом диалоге — как нажатие мимо окна («отмена»); раньше остальных обработчиков Esc
+document.addEventListener("keydown", function(e){
+  var dl = document.getElementById("dialog");
+  if(e.key !== "Escape" || !dl || dl.hidden || !dl.onclick) return;
+  e.preventDefault(); e.stopPropagation();
+  dl.click();
+}, true);
 document.getElementById("langToggle").onclick = function(){
   uiLang = (uiLang === "ru") ? "uz" : "ru";
   track("lang_switch", {to: uiLang});
