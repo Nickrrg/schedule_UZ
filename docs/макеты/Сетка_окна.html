@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Сетка: как выделить окно</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+:root{
+  --ink:#1B2B4B; --ink-soft:#6E7F99; --border:#E1E8F1; --border-strong:#D3DDEA;
+  --accent:#2F7EEA; --accent-soft:#E4EFFD; --panel:#EEF4FB;
+  --ok:#2E9E5B; --ok-bg:#E3F5EA; --warn:#B5530F; --warn-bg:#FDEBDD; --alarm:#E8590C; --danger:#E5484D; --danger-bg:#FDECEC;
+  --c-lang-bg:#E7EEFD; --c-lang:#2F6FDE; --c-math-bg:#FDEBDD; --c-math:#C8611A; --c-science-bg:#E1F4EA; --c-science:#23905A;
+  --c-social-bg:#F1E8F8; --c-social:#8A55B8; --c-arts-bg:#FCF1D6; --c-arts:#B3830A; --c-pe-bg:#DDF1F5; --c-pe:#1B879C;
+  --c-tech-bg:#EFEDE8; --c-tech:#7A7465;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{margin:0;background:#F4F7FB;color:var(--ink);font-family:Inter,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;font-size:14px;-webkit-font-smoothing:antialiased}
+.doc{max-width:1180px;margin:0 auto;padding:24px 16px 80px}
+.doc h1{font-size:22px;margin:0 0 4px}
+.doc .sub{color:var(--ink-soft);margin:0 0 20px;max-width:880px}
+.jump{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px}
+.jump a{padding:7px 14px;border:1px solid var(--border-strong);border-radius:10px;background:#fff;color:var(--ink);text-decoration:none;font-weight:600}
+.variant{margin-bottom:44px}
+.vhead h2{margin:0 0 4px;font-size:19px}
+.vhead p{margin:0 0 12px;color:var(--ink-soft);max-width:880px}
+.card{background:#fff;border-radius:14px;box-shadow:0 1px 2px rgba(16,35,63,.05),0 4px 14px rgba(16,35,63,.05);padding:18px 20px}
+.ph{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.ph h3{margin:0;font-size:18px}
+.ph .sp{flex:1}
+.cls{padding:5px 11px;border-radius:9px;border:1px solid var(--border);font-weight:600;font-size:13px;background:#fff}
+.cls.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent);color:var(--accent)}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;font-weight:600;font-size:13px;border:1px solid var(--border-strong);background:#fff;cursor:pointer;user-select:none}
+.pill.w{background:var(--warn-bg);border-color:#F6C9A6;color:var(--warn)}
+.pill.on{background:var(--alarm);border-color:var(--alarm);color:#fff}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--ink-soft);margin-top:12px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:14px;height:14px;border-radius:4px;display:inline-block}
+table.g{width:100%;border-collapse:separate;border-spacing:0;table-layout:fixed}
+.g th{font-size:12px;color:var(--ink-soft);font-weight:600;text-align:left;padding:6px 8px}
+.g th.n{width:34px}
+.g td{padding:3px;vertical-align:top}
+.g td.n{text-align:center;color:var(--ink-soft);font-weight:600;font-size:12px;vertical-align:middle}
+.cell{border-radius:9px;padding:6px 8px;min-height:48px;background:var(--gbg);transition:filter .15s,opacity .15s,background .15s}
+.cell .s{font-weight:600;font-size:12.5px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cell .t{font-size:11.5px;color:var(--grp);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cell.gap,.cell.cf{display:flex;align-items:center;justify-content:center;gap:5px;font-weight:700;font-size:12.5px}
+
+/* ---- Б1: окно «пустое место» — цвета уроков приглушены, окно белое с оранжевой рамкой ---- */
+.v1 .cell:not(.gap):not(.cf){background:color-mix(in srgb,var(--gbg) 60%,#fff)}
+.v1 .cell.gap{background:#fff;border:2px solid var(--alarm);color:var(--alarm);box-shadow:0 0 0 4px #FFE8D9}
+
+/* ---- Б2: окно — штриховка, единственное «пёстрое» место ---- */
+.v2 .cell.gap{color:#9A3412;border:2px solid #E8590C;
+  background:repeating-linear-gradient(135deg,#FFFFFF 0 6px,#FDBA74 6px 12px)}
+.v2 .cell.gap span{background:#fff;padding:2px 8px;border-radius:999px;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+
+/* ---- Б3: «Показать окна» — всё остальное гаснет ---- */
+.v3 .cell.gap{background:#fff;border:1.5px dashed #F2B38A;color:var(--warn)}
+.v3.focus .cell:not(.gap):not(.cf){filter:grayscale(1);opacity:.35}
+.v3.focus .cell.gap{background:var(--alarm);border-color:var(--alarm);color:#fff;box-shadow:0 4px 12px rgba(232,89,12,.35)}
+
+/* конфликт — везде красный */
+.cell.cf{background:var(--danger-bg);border:2px solid var(--danger);color:#B42318}
+.v3.focus .cell.cf{opacity:1;filter:none}
+</style>
+</head>
+<body>
+<div class="doc">
+  <h1>Сетка в стиле Б: как выделить окно</h1>
+  <p class="sub">Проблема: ячейки залиты цветами групп предметов, и окно среди них теряется. Ниже — три способа. Во всех трёх в сетке два окна (Ср 3-й, Пт 4-й урок) и одна накладка учителя (Чт 2-й урок) — она всегда красная.</p>
+  <div class="jump"><a href="#v1">Б1 — приглушить уроки</a><a href="#v2">Б2 — штриховка</a><a href="#v3">Б3 — кнопка «Показать окна»</a></div>
+
+  <section class="variant" id="v1">
+    <div class="vhead"><h2>Б1 — приглушить уроки, окно — белое с яркой рамкой</h2>
+    <p>Цвета уроков светлее вдвое: группы предметов различаются, но не кричат. Окно — единственная белая ячейка с оранжевой рамкой. Проще всего в коде.</p></div>
+    <div class="card v1"><div class="mount"></div></div>
+  </section>
+
+  <section class="variant" id="v2">
+    <div class="vhead"><h2>Б2 — окно заштриховано</h2>
+    <p>Цвета уроков как в варианте Б. Окно — полосатое, как «закрытая зона» на плане: полоски не похожи ни на один предмет, глаз цепляется сразу. Цвета уроков остаются яркими.</p></div>
+    <div class="card v2"><div class="mount"></div></div>
+  </section>
+
+  <section class="variant" id="v3">
+    <div class="vhead"><h2>Б3 — кнопка «Показать окна»</h2>
+    <p>Обычно сетка цветная, окно — пунктиром. Нажали «Окна: 2» — уроки становятся серыми, окна загораются оранжевым. Нажмите кнопку, чтобы попробовать. Можно сочетать с Б1 или Б2.</p></div>
+    <div class="card v3"><div class="mount"></div></div>
+  </section>
+</div>
+
+<script>
+var G = {lang:["var(--c-lang)","var(--c-lang-bg)"], math:["var(--c-math)","var(--c-math-bg)"], sci:["var(--c-science)","var(--c-science-bg)"],
+  soc:["var(--c-social)","var(--c-social-bg)"], arts:["var(--c-arts)","var(--c-arts-bg)"], pe:["var(--c-pe)","var(--c-pe-bg)"], tech:["var(--c-tech)","var(--c-tech-bg)"]};
+var S = {
+  kel:["Kelajak soati","Каримова Д.","soc"], ona:["Родной язык","Юсупова М.","lang"], lit:["Литература","Юсупова М.","lang"],
+  eng:["Английский язык","Ахмедова Н.","lang"], rus:["Русский язык","Саидова Л.","lang"],
+  alg:["Алгебра","Турсунов Ж.","math"], geo:["Геометрия","Турсунов Ж.","math"], fiz:["Физика","Назарова Г.","sci"],
+  bio:["Биология","Исмоилов Ф.","sci"], gg:["География","Исмоилов Ф.","sci"], ist:["История","Каримова Д.","soc"],
+  vos:["Воспитание","Каримова Д.","soc"], izo:["Изобразительное искусство","Холматова С.","arts"],
+  fk:["Физкультура","Абдуллаев У.","pe"], tex:["Технология","Мирзаев О.","tech"], inf:["Информатика","Мирзаев О.","tech"]
+};
+var DAYS = ["Пн","Вт","Ср","Чт","Пт","Сб"];
+var GRID = [
+  ["kel","alg","ona","alg","eng","ist"],
+  ["ona","fiz","alg","cf","alg","geo"],
+  ["alg","eng","gap","bio","lit","fk"],
+  ["eng","ist","bio","fk","gap","izo"],
+  ["fk","ona","fiz","eng","vos","inf"],
+  ["lit","gg","tex","rus","ona",""]
+];
+function cell(code){
+  if(code === "gap") return '<div class="cell gap"><span><i class="ti ti-clock-pause"></i> окно</span></div>';
+  if(code === "cf") return '<div class="cell cf"><i class="ti ti-alert-octagon"></i> накладка</div>';
+  if(!code) return '';
+  var s = S[code], g = G[s[2]];
+  return '<div class="cell" style="--grp:'+g[0]+';--gbg:'+g[1]+'"><div class="s">'+s[0]+'</div><div class="t">'+s[1]+'</div></div>';
+}
+function grid(withToggle){
+  var h = '<div class="ph"><h3>7-A</h3><span class="cls on">7-A</span><span class="cls">7-B</span><span class="cls">7-E</span><span class="cls">7-V</span><div class="sp"></div>'
+    + '<span class="pill w'+(withToggle?' tg':'')+'"><i class="ti ti-clock-pause"></i>Окна: 2</span>'
+    + '<span class="pill" style="color:#B42318;border-color:#F4B4B4;background:var(--danger-bg)"><i class="ti ti-alert-octagon"></i>Накладки: 1</span></div>'
+    + '<table class="g"><thead><tr><th class="n"></th>' + DAYS.map(function(d){ return "<th>"+d+"</th>"; }).join("") + '</tr></thead><tbody>';
+  GRID.forEach(function(row, r){ h += '<tr><td class="n">'+(r+1)+'</td>' + row.map(function(c){ return "<td>"+cell(c)+"</td>"; }).join("") + '</tr>'; });
+  h += '</tbody></table><div class="legend">'
+    + '<span><i class="sw" style="background:var(--c-lang-bg)"></i>Языки</span><span><i class="sw" style="background:var(--c-math-bg)"></i>Математика</span>'
+    + '<span><i class="sw" style="background:var(--c-science-bg)"></i>Естественные</span><span><i class="sw" style="background:var(--c-social-bg)"></i>Общество</span>'
+    + '<span><i class="sw" style="background:var(--c-arts-bg)"></i>Искусство</span><span><i class="sw" style="background:var(--c-pe-bg)"></i>Физкультура</span>'
+    + '<span><i class="sw" style="background:var(--c-tech-bg)"></i>Технология</span></div>';
+  return h;
+}
+document.querySelectorAll(".v1 .mount, .v2 .mount").forEach(function(m){ m.innerHTML = grid(false); });
+var m3 = document.querySelector(".v3 .mount"); m3.innerHTML = grid(true);
+var card3 = document.querySelector(".v3"), tg = card3.querySelector(".tg");
+tg.addEventListener("click", function(){
+  var on = card3.classList.toggle("focus");
+  tg.classList.toggle("on", on);
+  tg.innerHTML = on ? '<i class="ti ti-x"></i>Скрыть окна' : '<i class="ti ti-clock-pause"></i>Окна: 2';
+});
+</script>
+</body>
+</html>

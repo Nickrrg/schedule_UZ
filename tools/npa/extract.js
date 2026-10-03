@@ -135,6 +135,89 @@
     });
     return tables;
   };
+  /* Базовый учебный план (приказ №133 от 10.04.2026): таблица 1–11 классов на приложение (1, 2, 3, 4).
+     Строка предмета узнаётся по номеру в колонке «T/r»; название, разбитое на несколько строк, собирается так:
+     строка над номером с заглавной буквы — начало названия, со строчной — продолжение предыдущего предмета,
+     текст левее номера — хвост предыдущего предмета. Итог «Jami» и итоги по строкам сверяются. */
+  window.extractBase = async function(url){
+    var pdf = await pdfjsLib.getDocument(url).promise;
+    var tables = [], cur = null, annex = null;
+    for(var p = 1; p <= pdf.numPages; p++){
+      var page = await pdf.getPage(p);
+      var rows = lines((await page.getTextContent()).items);
+      for(var ri = 0; ri < rows.length; ri++){
+        var r = rows[ri], t = r.text;
+        var am = t.match(/(\d+[a-z]?)\s*-\s*ILOVA/i);
+        if(am){ annex = am[1]; continue; }
+        // заголовок: номера классов 1…11 (со словом «soat» или без)
+        var toks = [];
+        r.items.forEach(function(i){ i.s.trim().split(/\s+/).forEach(function(s){ if(s) toks.push({ s: s, x: i.x + i.w/2 }); }); });
+        var nums = toks.filter(function(k){ return /^\d+$/.test(k.s); });
+        if(nums.length === 11 && nums.every(function(k, i){ return +k.s === i + 1; }) && toks.every(function(k){ return /^\d+$/.test(k.s) || /^soat$/i.test(k.s); })){
+          if(!cur || cur.annex !== annex){ cur = { annex: annex, page: p, cols: nums.map(function(k){ return { grade: +k.s, x: k.x }; }), rows: [], jami: null, pending: [], lastIdx: null }; tables.push(cur); }
+          continue;
+        }
+        if(!cur || cur.jami || cur.annex !== annex) continue;
+        var c1 = cur.cols[0].x, c11 = cur.cols[10].x;
+        var vals = {}, total = null, idx = null, idxX = null, before = [], after = [];
+        r.items.forEach(function(i){
+          var s = i.s.trim(); if(!s) return;
+          var cx = i.x + i.w/2;
+          if(NUM.test(s) && cx > c1 - 20){
+            if(cx > c11 + 20){ total = num(s); return; }
+            var best = null, bd = 1e9;
+            cur.cols.forEach(function(c){ var d = Math.abs(c.x - cx); if(d < bd){ bd = d; best = c; } });
+            if(best && bd < 20){ vals[best.grade] = num(s); return; }
+          }
+          if(/^\d+$/.test(s) && idx === null && cx < c1 - 60 && +s <= 40){ idx = +s; idxX = cx; return; }
+          (idx === null ? before : after).push(i.s);
+        });
+        var label = after.join(" ").replace(/\s+/g, " ").trim(), pre = before.join(" ").replace(/\s+/g, " ").trim();
+        var hasNums = Object.keys(vals).length > 0;
+        if(/^Jami/i.test(pre + label) && hasNums){ cur.jami = vals; continue; }
+        if(idx !== null){
+          // текст левее номера — хвост предыдущего предмета («asoslari», «savodxonligi»)
+          if(pre && cur.lastIdx !== null && !/^[IVX]+\./.test(pre)){ var prev = cur.rows[cur.rows.length-1]; if(/^[a-zʻʼ‘’]/.test(pre)) prev.name += " " + pre; }
+          var head = cur.pending.filter(function(x){ return /^[A-ZʻʼOʻ]/.test(x); });
+          cur.rows.push({ idx: idx, name: (head.join(" ") + " " + label).replace(/\s+/g, " ").trim(), vals: vals, total: total });
+          cur.pending = []; cur.lastIdx = idx;
+          continue;
+        }
+        if(hasNums){
+          // подытог группы («I. Filologiya fanlari», «IV.») — не предмет; после него хвосты не приклеиваются
+          if(/^[IVX]+\./.test(pre + label) || /^[IVX]+\.?$/.test((pre + label).split(" ")[0])){ cur.pending = []; cur.lastIdx = null; }
+          continue;
+        }
+        if(!pre && !label){
+          continue;
+        }
+        var txt = (pre + " " + label).trim();
+        if(total !== null && !txt){ continue; }
+        if(/^(Haftalik|umumiy|soat|\(sinflar|Fan yoʻnalishlari|va nomlari|T\/r)/i.test(txt)) continue;
+        // строчная буква — продолжение названия предыдущего предмета, заглавная — начало следующего
+        if(/^[a-zʻʼ‘’(]/.test(txt) && cur.lastIdx !== null) cur.rows[cur.rows.length-1].name += " " + txt;
+        else cur.pending.push(txt);
+      }
+      // итог строки, перенесённый на отдельную строку («20» под «Rus tili»), — просто пропускается: сверка идёт по «Jami»
+    }
+    tables.forEach(function(tb){
+      tb.issues = [];
+      tb.rows.forEach(function(rw){ rw.name = rw.name.replace(/\s+/g, " ").replace(/’/g, "ʼ").trim(); });
+      tb.cols.forEach(function(c){
+        var sum = tb.rows.reduce(function(a, rw){ return a + (rw.vals[c.grade] || 0); }, 0);
+        var exp = tb.jami && tb.jami[c.grade];
+        if(exp === undefined || Math.abs(sum - exp) > 0.01) tb.issues.push("класс " + c.grade + ": сумма " + sum + " ≠ Jami " + exp);
+      });
+      tb.rows.forEach(function(rw){
+        if(rw.total === null) return;
+        var s = Object.keys(rw.vals).reduce(function(a, k){ return a + rw.vals[k]; }, 0);
+        if(Math.abs(s - rw.total) > 0.01) tb.issues.push("строка «" + rw.name + "»: " + s + " ≠ итог " + rw.total);
+      });
+      tb.grades = tb.cols.map(function(c){ return c.grade; });
+      delete tb.cols; delete tb.pending; delete tb.lastIdx;
+    });
+    return tables;
+  };
   window.saveJson = async function(name, data){
     var r = await fetch("/save?name=" + encodeURIComponent(name), { method: "POST", body: JSON.stringify(data, null, 1) });
     return r.status;

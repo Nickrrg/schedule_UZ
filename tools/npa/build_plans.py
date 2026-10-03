@@ -5,6 +5,9 @@ sys.stdout.reconfigure(encoding="utf-8")
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "out")
 t227 = json.load(io.open(os.path.join(OUT, "tables_227.json"), encoding="utf-8"))
 t183 = json.load(io.open(os.path.join(OUT, "tables_183.json"), encoding="utf-8"))
+# базовый учебный план 2026–2027 (приказ №133 от 10.04.2026): приложения 1–4, классы 1–11 (extractBase в extract.js)
+t133 = json.load(io.open(os.path.join(OUT, "tables_133.json"), encoding="utf-8"))
+LANG_133 = {"1": "uz", "2": "ru", "3": "q1", "4": "q2"}
 
 # приложение → язык обучения / образец плана
 LANG_227 = {"2": "uz", "3": "ru", "4": "q1", "5": "q2"}
@@ -42,8 +45,12 @@ def direction_key(title):
         if needle.upper() in T: return key
     return None
 
-plans = {"227": {}, "183": {}}
+plans = {"227": {}, "183": {}, "133": {}}
 problems = []
+for t in t133:
+    lang = LANG_133.get(t["annex"])
+    if not lang or t["issues"]: problems.append(("133", t["annex"], t["page"], t["issues"])); continue
+    plans["133"].setdefault("base", {})[lang] = {"g": t["grades"], "r": [[norm_name(r["name"]), "m", [r["vals"].get(str(x), 0) for x in t["grades"]]] for r in t["rows"]]}
 for t in t227:
     lang = LANG_227.get(t["annex"]); key = direction_key(t["title"])
     if not lang or not key: problems.append(("227", t["annex"], t["page"], t["title"][-80:])); continue
@@ -66,12 +73,14 @@ def compact(tb):
 import datetime
 # версия данных: дата приказа и файл-источник — рабочая область запоминает, по какой версии заполнен план
 cplans = {"meta": {"183": {"date": "2026-05-25", "source": "НПА/www.idum.uz__tanlov_fanlar_183_2026-2027.pdf"},
-                   "227": {"date": "2026-06-26", "source": "НПА/227_buyruq_variativ_reja.pdf"}},
+                   "227": {"date": "2026-06-26", "source": "НПА/227_buyruq_variativ_reja.pdf"},
+                   "133": {"date": "2026-04-10", "source": "НПА/Tayanch_oquv_reja_2026-2027.pdf"}},
           "n": names}
-for o in ("227", "183"):
+for o in ("227", "183", "133"):
     cplans[o] = {k: {l: compact(tb) for l, tb in v.items()} for k, v in plans[o].items()}
-js = ("/* Учебные планы приказов МНиШО №227 (26.06.2026, вариативные планы 7–11) и №183 (25.05.2026,\n"
-      "   предметы по выбору 10–11). Извлечено из PDF скриптами tools/npa — не править вручную.\n"
+js = ("/* Учебные планы приказов МНиШО №227 (26.06.2026, вариативные планы 7–11), №183 (25.05.2026,\n"
+      "   предметы по выбору 10–11) и №133 (10.04.2026, базовый учебный план 1–11, ключ base).\n"
+      "   Извлечено из PDF скриптами tools/npa — не править вручную.\n"
       "   Язык: uz, ru, q1/q2 — родственные языки (казахский, киргизский, таджикский, туркменский),\n"
       "   образец 1 (с русским языком) / 2 (без). Строка: [индекс названия в n, 0 — обязательная часть /\n"
       "   1 — вторая часть (предметы по выбору, профессия), часы по классам g]. */\n"

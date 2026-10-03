@@ -1,6 +1,6 @@
 # Учебные планы из приказов (НПА) → данные для index.html
 
-Таблицы учебных планов приказов МНиШО №227 (26.06.2026, вариативные планы 7–11) и №183 (25.05.2026, предметы по выбору 10–11) извлекаются из PDF автоматически и встраиваются в `index.html` как `ORDER_PLANS`. Руками данные не правятся — только пересборкой.
+Таблицы учебных планов приказов МНиШО №227 (26.06.2026, вариативные планы 7–11), №183 (25.05.2026, предметы по выбору 10–11) и МДШО №133 (10.04.2026, базовый учебный план 1–11, с 0.11) извлекаются из PDF автоматически и встраиваются в `index.html` как `ORDER_PLANS`. Руками данные не правятся — только пересборкой.
 
 ## Когда нужно
 
@@ -16,8 +16,10 @@
    ```js
    const a = await extractTables('/НПА/227_buyruq_variativ_reja.pdf', '227');
    const b = await extractTables('/НПА/www.idum.uz__tanlov_fanlar_183_2026-2027.pdf', '183');
+   const c = await extractBase('/НПА/Tayanch_oquv_reja_2026-2027.pdf');   // приказ №133: 4 таблицы 1–11
+   c.filter(t => t.issues.length);
    a.filter(t => t.issues.length); b.filter(t => t.issues.length);   // проверка сумм
-   await saveJson('tables_227.json', a); await saveJson('tables_183.json', b);
+   await saveJson('tables_227.json', a); await saveJson('tables_183.json', b); await saveJson('tables_133.json', c);
    ```
    Таблицы сохранятся в `tools/npa/out/`. PDF читается библиотекой pdf.js (грузится с cdnjs).
 3. Собрать данные:
@@ -44,6 +46,6 @@
 |---|---|
 | `devserver.py` | Раздаёт проект и принимает `POST /save` — сохраняет JSON из браузера в `out/` |
 | `pdftext.html` | Страница с pdf.js: `extract()` — текст страниц, `render()` — картинка страницы |
-| `extract.js` | `extractTables()` — таблицы с проверкой сумм, `saveJson()` |
+| `extract.js` | `extractTables()` — таблицы приказов №227/№183 с проверкой сумм; `extractBase()` — базовый план №133 (заголовок «1 … 11», строка предмета — по номеру «T/r», названия в несколько строк склеиваются; сверка с «Jami» и итогами строк); `saveJson()` |
 | `build_plans.py` | Сборка компактного `ORDER_PLANS` |
 | `out/` | Результаты (JSON таблиц и `order_plans.js`) |

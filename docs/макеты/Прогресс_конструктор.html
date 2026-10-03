@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Прогресс в конструкторе</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+/* Макет П-7: прогресс в конструкторе, не меняя вид меню. Стиль Б, шапка тёмно-синяя (П-8). */
+:root{
+  --ink:#1B2B4B; --ink-soft:#6E7F99; --border:#E1E8F1; --border-strong:#D3DDEA;
+  --accent:#2F7EEA; --accent-soft:#E4EFFD; --page:#F4F7FB;
+  --ok:#2E9E5B; --ok-bg:#E3F5EA; --warn:#B5530F; --warn-bg:#FDEBDD;
+  --shadow:0 1px 2px rgba(16,35,63,.05),0 4px 14px rgba(16,35,63,.05);
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{margin:0;background:#E9EEF5;color:var(--ink);font-family:Inter,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;font-size:14px;-webkit-font-smoothing:antialiased}
+.doc{max-width:1240px;margin:0 auto;padding:24px 16px 80px}
+.doc>h1{font-size:22px;margin:0 0 4px}
+.doc>.sub{color:var(--ink-soft);margin:0 0 18px;max-width:900px}
+.jump{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px}
+.jump a{padding:7px 14px;border:1px solid var(--border-strong);border-radius:10px;background:#fff;color:var(--ink);text-decoration:none;font-weight:600}
+.variant{margin-bottom:44px}
+.variant>h2{margin:0 0 4px;font-size:19px}
+.variant>p{margin:0 0 12px;color:var(--ink-soft);max-width:900px}
+.scroller{overflow-x:auto;border-radius:16px}
+.app{min-width:1080px;border-radius:16px;overflow:hidden;background:var(--page);border:1px solid #DCE3ED}
+
+.top{display:flex;align-items:center;gap:14px;padding:10px 16px;background:#1B2B4B;color:#fff}
+.logo{display:flex;align-items:center;gap:8px;font-weight:800;font-size:15px;white-space:nowrap}
+.logo i{font-size:20px;color:#9CC3FF}
+.seg{display:inline-flex;background:rgba(255,255,255,.1);border-radius:10px;padding:3px;margin-left:12px}
+.seg span{padding:5px 14px;font-weight:600;font-size:13px;color:rgba(255,255,255,.75);border-radius:8px}
+.seg .on{background:#fff;color:var(--accent)}
+.sp{flex:1}
+.chip{padding:6px 10px;border-radius:10px;font-size:12.5px;color:rgba(255,255,255,.85);background:rgba(255,255,255,.1);white-space:nowrap}
+
+.body{display:grid;grid-template-columns:220px minmax(0,1fr);gap:14px;padding:14px;min-height:520px}
+.side,.main{background:#fff;border-radius:14px;box-shadow:var(--shadow)}
+.side{padding:12px 10px;align-self:start}
+.grp{font-size:11px;font-weight:700;letter-spacing:.04em;color:#9AA8BC;margin:14px 8px 6px;text-transform:uppercase}
+.grp:first-child{margin-top:4px}
+.nav{display:flex;align-items:center;gap:9px;padding:6px 8px;border-radius:10px;font-weight:500;font-size:13.5px;margin-bottom:2px;cursor:pointer}
+.nav:hover{background:#F7F9FC}
+.nav i{width:28px;height:28px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font-size:16px;background:#F1F4F8;color:var(--ink-soft);flex:none}
+.nav .n{margin-left:auto;font-size:12px;color:var(--ink-soft)}
+.nav .b{margin-left:auto;font-size:11.5px;font-weight:700;padding:1px 7px;border-radius:999px}
+.b.w{background:var(--warn-bg);color:var(--warn)} .b.ok{background:var(--ok-bg);color:var(--ok)}
+.nav.on{box-shadow:0 0 0 1.5px var(--accent);color:var(--accent);font-weight:600;background:#fff}
+.nav.on i{background:var(--accent);color:#fff}
+.side .sep{border-top:1px solid var(--border);margin:12px 4px 8px}
+
+/* полоска «Готово N из 7» в меню (вариант А) */
+.prog{padding:4px 8px 10px;border-bottom:1px solid var(--border);margin-bottom:6px}
+.prog .l{display:flex;justify-content:space-between;font-size:12px;color:var(--ink-soft);font-weight:600;margin-bottom:6px}
+.prog .l b{color:var(--ink)}
+.bar{height:5px;border-radius:999px;background:#EEF2F7;overflow:hidden}
+.bar div{height:100%;background:var(--ok);border-radius:999px;transition:width .3s}
+
+/* шаги в шапке страницы (вариант В) */
+.crumb{display:flex;align-items:center;gap:10px;margin-bottom:10px;font-size:12px;color:var(--ink-soft);font-weight:600}
+.segs{display:flex;gap:4px;flex:none}
+.segs span{width:26px;height:5px;border-radius:999px;background:#E3E9F1}
+.segs .d{background:var(--ok)} .segs .w{background:#F2B38A} .segs .c{background:var(--accent)}
+
+.main{padding:18px 22px 18px;min-width:0;display:flex;flex-direction:column}
+.ph h3{margin:0;font-size:20px;font-weight:700}
+.ph p{margin:3px 0 14px;color:var(--ink-soft);font-size:13px}
+.ghost{height:14px;border-radius:6px;background:#F1F4F8;margin-bottom:10px}
+.foot{margin-top:auto;display:flex;align-items:center;gap:10px;border-top:1px solid var(--border);padding-top:12px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:10px;border:1px solid var(--border-strong);background:#fff;font-weight:600;font-size:13px;color:var(--ink);white-space:nowrap;cursor:pointer}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn i{font-size:16px}
+.fnote{font-size:12.5px;color:var(--ink-soft)}
+</style>
+</head>
+<body>
+<div class="doc">
+  <h1>Прогресс в конструкторе — варианты</h1>
+  <p class="sub">Меню не меняется: те же иконки, отступы и бейджи справа. Главных шагов 7: Школа и правила, Классы, Учителя, Нагрузка, Сетка, Проверка, Перенос. Предметы, Кабинеты, Печать и загрузка — необязательные, в прогресс не входят. Нажимайте на пункты меню и кнопки внизу.</p>
+  <div class="jump"><a href="#A">А — полоска в меню</a><a href="#B">Б — только бейджи</a><a href="#C">В — шаги в шапке страницы</a></div>
+
+  <section class="variant" id="A"><h2>А — тонкая полоска «Готово 4 из 7» в меню + бейджи + «Дальше»</h2>
+    <p>Над меню одна строка с полоской. У готовых главных пунктов — зелёная галочка, у пунктов с проблемами — оранжевое число, у не начатых — ничего. Число классов, учителей переезжает в заголовок экрана.</p>
+    <div class="scroller"><div class="app" data-v="A"></div></div></section>
+
+  <section class="variant" id="B"><h2>Б — только бейджи + «Дальше»</h2>
+    <p>Меню точь-в-точь как сейчас, без полоски: прогресс видно по галочкам. Самый тихий вариант.</p>
+    <div class="scroller"><div class="app" data-v="B"></div></div></section>
+
+  <section class="variant" id="C"><h2>В — меню без изменений, шаги в шапке экрана + «Дальше»</h2>
+    <p>Меню не трогаем вовсе, даже бейджи остаются как есть. Над заголовком экрана — «Шаг 4 из 7» и 7 коротких отрезков: зелёный — готово, оранжевый — есть что поправить, синий — где вы сейчас.</p>
+    <div class="scroller"><div class="app" data-v="C"></div></div></section>
+</div>
+
+<script>
+var MAIN = ["school","classes","teachers","load","grid","check","transfer"];
+var SCR = {
+  school:["building","Школа и правила","Тип школы, звонки, правила и методические дни."],
+  classes:["users-group","Классы","50 классов в 11 параллелях."],
+  teachers:["user","Учителя","85 учителей."],
+  subjects:["book","Предметы","131 предмет."],
+  rooms:["door","Кабинеты","57 кабинетов."],
+  load:["list-numbers","Нагрузка","3 предмета без учителя — назначьте, чтобы уроки встали в сетку."],
+  check:["shield-check","Проверка","49 окон у классов, 1 накладка учителей."],
+  grid:["table","Сетка","Расписание составлено."],
+  transfer:["arrow-back-up","Перенос в eMaktab","Список изменений для eMaktab."],
+  print:["printer","Печать и Excel","Для стенда, учителей и завуча."],
+  upload:["upload","Загрузить из eMaktab","Загружено 29 сентября."]
+};
+// состояние главных шагов: done / warn (число) / todo
+var STATE = { school:["done"], classes:["done"], teachers:["done"], load:["warn",3], grid:["done"], check:["warn",49], transfer:["todo"] };
+var COUNTS = { classes:50, teachers:85, subjects:131, rooms:57, load:"", check:"", transfer:"" };
+var cur = { A:"load", B:"load", C:"load" };
+
+function badge(v, k){
+  if(v === "C"){ // как сейчас
+    var old = {school:'<span class="b ok">✓</span>', classes:'<span class="n">50</span>', teachers:'<span class="n">85</span>', subjects:'<span class="n">131</span>', rooms:'<span class="n">57</span>', load:'<span class="b w">3</span>', check:'<span class="b w">49</span>'};
+    return old[k] || "";
+  }
+  var s = STATE[k];
+  if(!s) return COUNTS[k] ? '<span class="n">'+COUNTS[k]+'</span>' : '';
+  if(s[0] === "done") return '<span class="b ok">✓</span>';
+  if(s[0] === "warn") return '<span class="b w">'+s[1]+'</span>';
+  return '';
+}
+function doneCount(){ return MAIN.filter(function(k){ return STATE[k][0] === "done"; }).length; }
+function side(v){
+  function item(k){ return '<div class="nav'+(cur[v]===k?" on":"")+'" data-k="'+k+'"><i class="ti ti-'+SCR[k][0]+'"></i>'+SCR[k][1]+badge(v, k)+'</div>'; }
+  var h = '<div class="side">';
+  if(v === "A") h += '<div class="prog"><div class="l"><span>Готово</span><b>'+doneCount()+' из 7</b></div><div class="bar"><div style="width:'+Math.round(doneCount()/7*100)+'%"></div></div></div>';
+  h += '<div class="grp">Данные школы</div>'+["school","classes","teachers","subjects","rooms","load"].map(item).join("")
+    + '<div class="grp">Расписание</div>'+["grid","check","transfer","print"].map(item).join("")
+    + '<div class="sep"></div>'+item("upload")+'</div>';
+  return h;
+}
+function order(){ return ["school","classes","teachers","load","grid","check","transfer"]; }
+function main(v){
+  var k = cur[v], o = order(), i = o.indexOf(k), prev = i > 0 ? o[i-1] : null, next = i >= 0 && i < o.length-1 ? o[i+1] : null;
+  var h = '<div class="main">';
+  if(v === "C" && i >= 0){
+    h += '<div class="crumb"><span>Шаг '+(i+1)+' из 7</span><span class="segs">'+o.map(function(x){
+      var s = STATE[x][0]; return '<span class="'+(x===k?"c":(s==="done"?"d":(s==="warn"?"w":"")))+'"></span>'; }).join("")+'</span></div>';
+  }
+  h += '<div class="ph"><h3>'+SCR[k][1]+'</h3><p>'+SCR[k][2]+'</p></div>'
+    + '<div class="ghost" style="width:92%"></div><div class="ghost" style="width:78%"></div><div class="ghost" style="width:85%"></div><div class="ghost" style="width:64%"></div><div class="ghost" style="width:72%"></div>';
+  if(i >= 0){
+    h += '<div class="foot">'+(prev?'<span class="btn" data-k="'+prev+'"><i class="ti ti-arrow-left"></i>'+SCR[prev][1]+'</span>':'')
+      + '<div class="sp"></div>'
+      + (STATE[k][0] === "warn" ? '<span class="fnote">Можно идти дальше и с замечаниями</span>' : '')
+      + (next?'<span class="btn pri" data-k="'+next+'">Дальше: '+SCR[next][1]+'<i class="ti ti-arrow-right"></i></span>':'<span class="fnote">Последний шаг</span>')+'</div>';
+  } else {
+    h += '<div class="foot"><span class="fnote">Необязательный раздел — в прогресс не входит</span></div>';
+  }
+  return h + '</div>';
+}
+function render(){
+  document.querySelectorAll(".app").forEach(function(a){
+    var v = a.getAttribute("data-v");
+    a.innerHTML = '<div class="top"><div class="logo"><i class="ti ti-calendar-time"></i>Конструктор расписания</div>'
+      + '<div class="seg"><span>Помощник</span><span class="on">Конструктор</span></div><div class="sp"></div>'
+      + '<span class="chip">Oʻzbekcha</span><span class="chip"><i class="ti ti-dots"></i></span></div>'
+      + '<div class="body">'+side(v)+main(v)+'</div>';
+  });
+}
+document.addEventListener("click", function(e){
+  var el = e.target.closest("[data-k]"); if(!el) return;
+  var v = el.closest(".app").getAttribute("data-v");
+  cur[v] = el.getAttribute("data-k"); render();
+});
+render();
+</script>
+</body>
+</html>

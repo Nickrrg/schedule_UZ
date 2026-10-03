@@ -1,0 +1,875 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Прототип 0.12</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+/* Прототип 0.12: стиль Б «мягкие карточки», окно — Б1, правки П-1…П-9 (решения 2026-09-29). Данные вымышленные. */
+:root{
+  --ink:#1B2B4B; --ink-soft:#6E7F99; --border:#E1E8F1; --border-strong:#D3DDEA;
+  --accent:#2F7EEA; --accent-soft:#E4EFFD; --panel:#EEF4FB; --page:#F4F7FB;
+  --ok:#2E9E5B; --ok-bg:#E3F5EA; --warn:#B5530F; --warn-bg:#FDEBDD; --alarm:#E8590C; --danger:#E5484D; --danger-bg:#FDECEC;
+  --c-lang-bg:#E7EEFD; --c-lang:#2F6FDE; --c-math-bg:#FDEBDD; --c-math:#C8611A; --c-science-bg:#E1F4EA; --c-science:#23905A;
+  --c-social-bg:#F1E8F8; --c-social:#8A55B8; --c-arts-bg:#FCF1D6; --c-arts:#B3830A; --c-pe-bg:#DDF1F5; --c-pe:#1B879C;
+  --c-tech-bg:#EFEDE8; --c-tech:#7A7465;
+  --shadow:0 1px 2px rgba(16,35,63,.05),0 4px 14px rgba(16,35,63,.05);
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--page);color:var(--ink);font-family:Inter,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;font-size:14px;-webkit-font-smoothing:antialiased}
+[data-go],[data-act],[data-bot],[data-kon],[data-issue]{cursor:pointer}
+
+/* панель прототипа (не часть продукта) */
+.proto{display:flex;align-items:center;gap:10px;padding:6px 16px;background:#F1E8F8;color:#5B3A7A;font-size:12.5px;flex-wrap:wrap;border-bottom:1px solid #E2D2F0}
+.proto b{font-weight:700}
+.proto select{font:inherit;font-size:12.5px;padding:3px 8px;border-radius:8px;border:1px solid #D9C6EA;max-width:340px;background:#fff}
+.proto label{display:flex;align-items:center;gap:6px;cursor:pointer}
+.proto .sp{flex:1}
+
+/* шапка — тёмно-синяя (П-8) */
+.top{display:flex;align-items:center;gap:14px;padding:10px 16px;background:#1B2B4B;color:#fff;position:relative}
+.logo{display:flex;align-items:center;gap:8px;font-weight:800;font-size:15px;white-space:nowrap}
+.logo i{font-size:20px;color:#9CC3FF}
+.seg{display:inline-flex;background:rgba(255,255,255,.1);border-radius:10px;padding:3px;margin-left:12px}
+.seg span{padding:5px 14px;font-weight:600;font-size:13px;color:rgba(255,255,255,.75);border-radius:8px}
+.seg .on{background:#fff;color:var(--accent)}
+.sp{flex:1}
+.chip{padding:6px 10px;border-radius:10px;font-size:12.5px;color:rgba(255,255,255,.85);background:rgba(255,255,255,.1);white-space:nowrap}
+.menu{position:absolute;right:16px;top:48px;z-index:30;background:#fff;color:var(--ink);border-radius:12px;box-shadow:0 8px 28px rgba(16,35,63,.18);padding:6px;width:260px}
+.menu div{padding:9px 10px;border-radius:8px;display:flex;gap:8px;align-items:center;font-size:13.5px}
+.menu div:hover{background:#F4F7FB}
+.menu .danger{color:var(--danger)}
+.menu hr{border:none;border-top:1px solid var(--border);margin:4px 0}
+
+/* каркас конструктора */
+.body{display:grid;grid-template-columns:220px minmax(0,1fr);gap:14px;padding:14px;min-height:calc(100vh - 90px)}
+.body.withpanel{grid-template-columns:220px minmax(0,1fr) 340px}
+.side,.main,.panel{background:#fff;border-radius:14px;box-shadow:var(--shadow)}
+.side{padding:12px 10px;align-self:start;position:sticky;top:14px}
+.grp{font-size:11px;font-weight:700;letter-spacing:.04em;color:#9AA8BC;margin:14px 8px 6px;text-transform:uppercase}
+.grp:first-child{margin-top:4px}
+.nav{display:flex;align-items:center;gap:9px;padding:6px 8px;border-radius:10px;font-weight:500;font-size:13.5px;margin-bottom:2px}
+.nav:hover{background:#F7F9FC}
+.nav i{width:28px;height:28px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font-size:16px;background:#F1F4F8;color:var(--ink-soft);flex:none}
+.nav .n{margin-left:auto;font-size:12px;color:var(--ink-soft)}
+.nav .b{margin-left:auto;font-size:11.5px;font-weight:700;padding:1px 7px;border-radius:999px}
+.b.w{background:var(--warn-bg);color:var(--warn)} .b.ok{background:var(--ok-bg);color:var(--ok)}
+.nav.on{box-shadow:0 0 0 1.5px var(--accent);color:var(--accent);font-weight:600;background:#fff}
+.nav.on i{background:var(--accent);color:#fff}
+.side .sep{border-top:1px solid var(--border);margin:12px 4px 8px}
+.main{padding:18px 22px 18px;min-width:0;display:flex;flex-direction:column}
+.content{flex:1}
+.ph{display:flex;align-items:flex-start;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.ph h3{margin:0;font-size:20px;font-weight:700}
+.ph p{margin:3px 0 0;color:var(--ink-soft);font-size:13px;max-width:640px}
+
+/* прогресс — вариант В (П-7): шаги над заголовком экрана, «Назад / Дальше» внизу */
+.crumb{display:flex;align-items:center;gap:10px;margin-bottom:10px;font-size:12px;color:var(--ink-soft);font-weight:600}
+.segbar{display:flex;gap:4px}
+.segbar span{width:26px;height:5px;border-radius:999px;background:#E3E9F1}
+.segbar .d{background:var(--ok)} .segbar .w{background:#F2B38A} .segbar .c{background:var(--accent)}
+.foot{display:flex;align-items:center;gap:10px;border-top:1px solid var(--border);padding-top:12px;margin-top:20px}
+.fnote{font-size:12.5px;color:var(--ink-soft)}
+
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:10px;border:1px solid var(--border-strong);background:#fff;font-weight:600;font-size:13px;color:var(--ink);white-space:nowrap}
+.btn:hover{background:#F7F9FC}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.pri:hover{background:#2A70D2}
+.btn.big{padding:11px 18px;font-size:14px}
+.btn.dng{color:var(--danger)}
+.btn.sm{padding:5px 10px;font-size:12.5px}
+.btn i{font-size:16px}
+.link{color:var(--accent);font-weight:600;font-size:13px}
+.muted{color:var(--ink-soft)}
+.search{display:flex;align-items:center;gap:8px;border:1px solid var(--border-strong);border-radius:10px;padding:7px 11px;color:var(--ink-soft);font-size:13px;min-width:240px}
+.bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.tile{border-radius:12px;padding:10px 12px;background:#F7F9FC;display:flex;gap:10px;align-items:center}
+.tile .ic{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex:none}
+.tile .v{font-size:20px;font-weight:700;line-height:1.1}
+.tile .l{font-size:12px;color:var(--ink-soft)}
+.t-ok .ic{background:var(--ok-bg);color:var(--ok)} .t-w .ic{background:var(--warn-bg);color:var(--warn)} .t-w .v{color:var(--warn)}
+.t-i .ic{background:var(--accent-soft);color:var(--accent)}
+.card{border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:12px}
+.card h4{margin:0 0 4px;font-size:15px}
+.card .hint{margin:0 0 10px;font-size:12.5px;color:var(--ink-soft)}
+.cols2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.note{display:flex;gap:10px;align-items:flex-start;background:#F7F1FC;border:1px dashed #D9C6EA;color:#5B3A7A;border-radius:10px;padding:8px 12px;font-size:12.5px;margin-bottom:14px}
+.note i{font-size:16px;margin-top:1px}
+.note .st2{background:#8A55B8;color:#fff;border-radius:6px;padding:0 6px;font-weight:700;font-size:11px;margin-right:4px}
+.hideNotes .note{display:none}
+.st2b{display:inline-block;background:#F1E8F8;color:#8A55B8;border-radius:6px;padding:1px 6px;font-weight:700;font-size:10.5px;margin-left:6px;vertical-align:1px}
+.hideNotes .st2b{display:none}
+
+/* таблицы */
+.tbl{width:100%;border-collapse:separate;border-spacing:0}
+.tbl th{white-space:nowrap;font-size:12px;color:var(--ink-soft);font-weight:600;text-align:left;padding:8px 10px;border-bottom:1px solid var(--border)}
+.tbl td{padding:9px 10px;border-bottom:1px solid var(--border);font-size:13.5px;vertical-align:middle}
+.tbl tr.row:hover td{background:#F7F9FC}
+.tbl tr.par td{background:#F7F9FC;font-weight:600}
+.tbl tr.sel td{background:var(--accent-soft)}
+.inh{color:#9AA8BC}
+.tag{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:600;background:#F1F4F8;color:var(--ink-soft);white-space:nowrap}
+.tag.diff{background:#FFF4E5;color:#9A3412} .tag.ok{background:var(--ok-bg);color:var(--ok)} .tag.w{background:var(--warn-bg);color:var(--warn)}
+.tag.i{background:var(--accent-soft);color:var(--accent)}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:0}
+.caret{color:var(--ink-soft);margin-right:6px}
+
+/* боковая панель */
+.panel{padding:18px 18px 20px;align-self:start;position:sticky;top:14px}
+.panel h4{margin:0;font-size:17px}
+.panel .ph2{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.panel .hint{font-size:12.5px;color:var(--ink-soft);margin:0 0 14px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--ink-soft);margin-bottom:5px}
+.inp{border:1px solid var(--border-strong);border-radius:10px;padding:8px 11px;font-size:13.5px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.inp.inh{color:var(--ink-soft);background:#F7F9FC;border-style:dashed}
+.segs{display:flex;gap:6px;flex-wrap:wrap}
+.segs span{padding:6px 11px;border-radius:9px;border:1px solid var(--border-strong);font-size:13px;font-weight:600}
+.segs .on{background:var(--accent);border-color:var(--accent);color:#fff}
+.pfoot{display:flex;gap:8px;margin-top:16px;padding-top:14px;border-top:1px solid var(--border);align-items:center}
+.avail{display:grid;grid-template-columns:24px repeat(6,1fr);gap:3px;font-size:11px;text-align:center}
+.avail .h{color:var(--ink-soft);font-weight:600}
+.avail .c{height:22px;border-radius:5px;background:#D9F2E3}
+.avail .c.off{background:#FDECEC;background-image:repeating-linear-gradient(135deg,transparent 0 4px,rgba(229,72,77,.18) 4px 8px)}
+
+/* сетка Б1 */
+.cls{padding:5px 11px;border-radius:9px;border:1px solid var(--border);font-weight:600;font-size:13px;background:#fff}
+.cls.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent);color:var(--accent)}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:999px;font-weight:600;font-size:12.5px}
+.pill.w{background:var(--warn-bg);color:var(--warn)} .pill.r{background:var(--danger-bg);color:#B42318} .pill.i{background:var(--accent-soft);color:var(--accent)}
+table.g{width:100%;border-collapse:separate;border-spacing:0;table-layout:fixed}
+.g th{font-size:12px;color:var(--ink-soft);font-weight:600;text-align:left;padding:6px 8px}
+.g th.n{width:34px}
+.g td{padding:3px;vertical-align:top}
+.g td.n{text-align:center;color:var(--ink-soft);font-weight:600;font-size:12px;vertical-align:middle}
+.cell{border-radius:9px;padding:6px 8px;min-height:48px;background:color-mix(in srgb,var(--gbg) 60%,#fff);position:relative}
+.cell .s{font-weight:600;font-size:12.5px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cell .t{font-size:11.5px;color:var(--grp);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cell .s i{font-size:12px;color:var(--ink-soft);margin-left:3px}
+.cell.gap{background:#fff;border:2px solid var(--alarm);color:var(--alarm);box-shadow:0 0 0 4px #FFE8D9;display:flex;align-items:center;justify-content:center;gap:5px;font-weight:700;font-size:12.5px}
+.cell.cf{background:var(--danger-bg);border:2px solid var(--danger);color:#B42318;display:flex;align-items:center;justify-content:center;gap:5px;font-weight:700;font-size:12.5px}
+.cell.sel{box-shadow:0 0 0 2.5px var(--accent)}
+.cell.chg::after{content:"";position:absolute;top:5px;right:5px;width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 2px #fff}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--ink-soft);margin-top:12px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:14px;height:14px;border-radius:4px;display:inline-block}
+.gwrap{position:relative}
+.pop{position:absolute;z-index:5;width:250px;background:#fff;border-radius:12px;box-shadow:0 8px 28px rgba(16,35,63,.18);padding:12px 14px;font-size:13px}
+.pop b{display:block;margin-bottom:2px}
+.pop .row{display:flex;justify-content:space-between;padding:6px 0;border-top:1px solid var(--border)}
+.pop .row span:first-child{color:var(--ink-soft)}
+.pop .row.hl{background:#FFF7F1;margin:0 -14px;padding:6px 14px}
+.dd{position:relative;display:inline-block}
+.ddm{position:absolute;right:0;top:40px;z-index:6;background:#fff;border-radius:12px;box-shadow:0 8px 28px rgba(16,35,63,.18);padding:6px;width:330px}
+.ddm div{padding:10px;border-radius:8px}
+.ddm div:hover{background:#F4F7FB}
+.ddm b{display:block;font-size:13.5px}
+.ddm span{font-size:12.5px;color:var(--ink-soft)}
+.tt{width:100%;border-collapse:separate;border-spacing:0;table-layout:fixed;font-size:12px}
+.tt th{color:var(--ink-soft);font-weight:600;text-align:left;padding:6px}
+.tt td{padding:3px}
+.tt tr.hl td{background:var(--accent-soft)}
+.tt tr.hl td:first-child{border-radius:9px 0 0 9px} .tt tr.hl td:last-child{border-radius:0 9px 9px 0}
+.tt .x{border-radius:7px;padding:5px 7px;background:#F1F4F8;font-weight:600;min-height:28px}
+.tt .x.e{background:transparent}
+.tt .x.g{background:#fff;border:2px solid var(--alarm);color:var(--alarm);text-align:center}
+.tt .x.cf{background:var(--danger-bg);border:2px solid var(--danger);color:#B42318}
+
+/* полоска «Проблема N из M» (П-4) */
+.istrip{display:flex;align-items:center;gap:10px;background:#FFF7F1;border:1px solid #F6C9A6;border-radius:12px;padding:9px 12px;margin-bottom:14px;font-size:13px;flex-wrap:wrap}
+.istrip b{color:var(--warn)}
+.istrip .t{font-weight:600}
+
+/* пустая сетка (П-5) */
+.ready{list-style:none;margin:0 0 18px;padding:0;max-width:520px}
+.ready li{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);font-size:13.5px}
+.ready li i{font-size:18px}
+.ready li .go{margin-left:auto;color:var(--accent);font-weight:600;font-size:12.5px}
+
+/* модальное окно */
+.shade{position:fixed;inset:0;background:rgba(27,43,75,.35);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+.modal{background:#fff;border-radius:16px;box-shadow:0 20px 50px rgba(16,35,63,.25);width:560px;max-width:100%;padding:22px 24px}
+.modal h4{margin:0 0 4px;font-size:19px}
+.modal .lead{margin:0 0 16px;color:var(--ink-soft);font-size:13.5px}
+.cmp{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.cmp div{background:#F7F9FC;border-radius:12px;padding:10px 12px}
+.cmp span{display:block;font-size:12px;color:var(--ink-soft)}
+.cmp b{font-size:18px}
+.cmp s{color:var(--ink-soft);font-weight:500;margin-right:6px}
+.cmp .good b{color:var(--ok)} .cmp .w b{color:var(--warn)}
+.macts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+/* помощник */
+.botwrap{padding:26px 16px 48px;display:flex;justify-content:center}
+.bot{width:100%;max-width:800px}
+/* шаги — линия и галочки, как в 0.11 (П-6) */
+.track{display:flex;align-items:flex-start;margin:0 auto 20px;max-width:620px}
+.tstep{display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;position:relative;font-size:12.5px;font-weight:600;color:var(--ink-soft);text-align:center}
+.tstep .c{width:28px;height:28px;border-radius:50%;background:#fff;border:2px solid var(--border-strong);display:flex;align-items:center;justify-content:center;z-index:1;font-size:13px}
+.tstep::before{content:"";position:absolute;top:13px;right:50%;width:100%;height:3px;background:var(--border)}
+.tstep:first-child::before{display:none}
+.tstep.done{color:var(--ok)} .tstep.done .c{background:var(--ok);border-color:var(--ok);color:#fff}
+.tstep.on{color:var(--accent)} .tstep.on .c{border-color:var(--accent);color:var(--accent);box-shadow:0 0 0 4px var(--accent-soft)}
+.tstep.done::before,.tstep.on::before{background:var(--ok)}
+.bcard{background:#fff;border-radius:16px;box-shadow:var(--shadow);padding:24px 26px}
+.bcard h4{margin:0 0 4px;font-size:22px}
+.bcard .lead{margin:0 0 18px;color:var(--ink-soft)}
+.bfoot{display:flex;gap:10px;align-items:center;margin-top:20px;flex-wrap:wrap}
+.opt{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:6px}
+.opt div{border:1.5px solid var(--border);border-radius:14px;padding:16px}
+.opt div:hover{border-color:var(--accent);background:#FAFCFF}
+.opt i{font-size:26px;color:var(--accent)}
+.opt b{display:block;font-size:16px;margin:8px 0 4px}
+.opt span{font-size:13px;color:var(--ink-soft)}
+.drop{border:2px dashed var(--border-strong);border-radius:14px;padding:16px;display:flex;gap:14px;align-items:center;margin-bottom:10px}
+.drop i{font-size:28px;color:var(--accent)}
+.drop b{display:block}
+.drop span{font-size:12.5px;color:var(--ink-soft)}
+.drop.done{border-style:solid;border-color:#BFE6CD;background:#F4FBF7}
+.drop.done i{color:var(--ok)}
+.kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+.kpi div{border-radius:12px;padding:12px 14px;background:#F7F9FC}
+.kpi b{display:block;font-size:24px}
+.kpi span{font-size:12px;color:var(--ink-soft)}
+.kpi .w b{color:var(--warn)} .kpi .g b{color:var(--ok)}
+.probh{font-size:13px;font-weight:700;margin:0 0 6px}
+.prob{list-style:none;margin:0 0 6px;padding:0}
+.prob li{display:flex;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--border);font-size:13.5px}
+.prob li>i{color:var(--warn);font-size:18px}
+.prob li .go{margin-left:auto;color:var(--accent);font-weight:600;font-size:12.5px;white-space:nowrap}
+/* «О школе» — вопросы списком, как карточка «Правила школы» 0.11 (П-2) */
+.qsec{font-size:12px;font-weight:700;color:#9AA8BC;letter-spacing:.04em;text-transform:uppercase;margin:18px 0 4px}
+.qsec:first-child{margin-top:0}
+.qrow{display:flex;gap:16px;align-items:flex-start;padding:12px 0;border-top:1px solid var(--border)}
+.qrow .qt{flex:1}
+.qrow b{display:block;font-size:14px}
+.qrow span.h{font-size:12.5px;color:var(--ink-soft)}
+.yn2{display:inline-flex;border:1px solid var(--border-strong);border-radius:10px;overflow:hidden;flex:none}
+.yn2 span{padding:6px 14px;font-weight:600;font-size:13px}
+.yn2 span+span{border-left:1px solid var(--border-strong)}
+.yn2 .on{background:var(--accent);color:#fff}
+.sub{margin:10px 0 0;padding:10px 12px;background:#F7F9FC;border-radius:10px;font-size:12.5px}
+.sub .cl{display:inline-flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.sub .cl span{padding:4px 10px;border-radius:8px;border:1px solid var(--border-strong);background:#fff;font-weight:600}
+.sub .cl span.on{border-color:var(--accent);color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.dirl{display:grid;grid-template-columns:70px 1fr;gap:6px 10px;align-items:center;margin-top:8px}
+.dirl .inp{padding:5px 10px;font-size:13px;background:#fff}
+.stepper{display:inline-flex;align-items:center;border:1px solid var(--border-strong);border-radius:10px;overflow:hidden}
+.stepper span{padding:6px 10px;font-weight:600}
+.stepper span:first-child,.stepper span:last-child{background:#F7F9FC;color:var(--ink-soft)}
+.pgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px 16px}
+.pgrid div{display:flex;align-items:center;justify-content:space-between;font-size:13.5px;font-weight:600}
+.progress{height:8px;border-radius:999px;background:#EEF2F7;overflow:hidden;margin:14px 0 6px}
+.progress div{height:100%;background:var(--accent);width:68%}
+.bnote{margin-top:14px;font-size:12.5px;color:var(--ink-soft);text-align:center}
+.load td .x{font-size:12.5px}
+.load td .x b{display:block}
+.load td .x span{font-size:11.5px;color:var(--ink-soft)}
+.load td .x.no span{color:var(--warn);font-weight:600}
+.load tr.hl td{background:#FFF7F1}
+.chg-list{list-style:none;padding:0;margin:0}
+.chg-list li{display:flex;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);font-size:13.5px}
+.chg-list .k{font-weight:700;width:64px;color:var(--ink-soft)}
+.op{font-size:11.5px;font-weight:700;padding:2px 8px;border-radius:999px}
+.op.add{background:var(--ok-bg);color:var(--ok)} .op.rep{background:var(--accent-soft);color:var(--accent)} .op.del{background:var(--danger-bg);color:#B42318}
+.check{width:18px;height:18px;border-radius:5px;border:1.5px solid var(--border-strong);display:inline-flex;align-items:center;justify-content:center;font-size:12px}
+.check.on{background:var(--ok);border-color:var(--ok);color:#fff}
+.acc{border:1px solid var(--border);border-radius:12px;margin-bottom:10px;overflow:hidden}
+.acc .hd{display:flex;align-items:center;gap:10px;padding:12px 14px;font-weight:600}
+.acc .hd .tag{margin-left:auto}
+.acc .bd{padding:0 14px 8px}
+.acc .it{display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--border);font-size:13.5px}
+.acc .it .go{margin-left:auto;color:var(--accent);font-weight:600;font-size:12.5px}
+.rule{display:flex;gap:12px;align-items:flex-start;border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:10px}
+.rule b{display:block;font-size:14px}
+.rule span{font-size:12.5px;color:var(--ink-soft)}
+.sw2{width:40px;height:22px;border-radius:999px;background:var(--accent);position:relative;flex:none;margin-top:2px}
+.sw2::after{content:"";position:absolute;right:3px;top:3px;width:16px;height:16px;border-radius:50%;background:#fff}
+.sw2.off{background:#CBD5E1}
+.sw2.off::after{right:auto;left:3px}
+.empty{text-align:center;padding:40px 16px}
+.empty i.big{font-size:40px;color:var(--accent);background:var(--accent-soft);border-radius:16px;padding:12px}
+.empty h4{font-size:18px;margin:14px 0 4px}
+.empty p{color:var(--ink-soft);margin:0 0 16px}
+</style>
+</head>
+<body>
+<div class="proto"><b>Прототип 0.12</b><span>вымышленные данные · нажимайте на кнопки и пункты меню</span><div class="sp"></div>
+  <span>Экран:</span><select id="jump"></select>
+  <label><input type="checkbox" id="notes" checked> Пояснения</label>
+  <span class="link" data-act="reset">С начала</span></div>
+<div id="root"></div>
+
+<script>
+/* ================= ДАННЫЕ ================= */
+var PAR = {1:"ABDGV",2:"ABDGV",3:"ABDGV",4:"ABDV",5:"ABGV",6:"ABGV",7:"ABEV",8:"ABEGV",9:"ABEGV",10:"ABEGV",11:"BGJV"};
+var CLASSES = []; Object.keys(PAR).forEach(function(g){ PAR[g].split("").forEach(function(l){ CLASSES.push(g+"-"+l); }); });
+var G = {lang:["var(--c-lang)","var(--c-lang-bg)","Языки"], math:["var(--c-math)","var(--c-math-bg)","Математика"], sci:["var(--c-science)","var(--c-science-bg)","Естественные"],
+  soc:["var(--c-social)","var(--c-social-bg)","Общество"], arts:["var(--c-arts)","var(--c-arts-bg)","Искусство"], pe:["var(--c-pe)","var(--c-pe-bg)","Физкультура"], tech:["var(--c-tech)","var(--c-tech-bg)","Технология"]};
+var S = {
+  kel:["Kelajak soati","Каримова Д.","soc"], ona:["Родной язык","Юсупова М.","lang"], lit:["Литература","Юсупова М.","lang"],
+  eng:["Английский язык","Ахмедова Н.","lang"], rus:["Русский язык","Саидова Л.","lang"],
+  alg:["Алгебра","Турсунов Ж.","math"], geo:["Геометрия","Турсунов Ж.","math"], fiz:["Физика","Назарова Г.","sci"],
+  bio:["Биология","Исмоилов Ф.","sci"], gg:["География","Исмоилов Ф.","sci"], ist:["История","Каримова Д.","soc"],
+  vos:["Воспитание","Каримова Д.","soc"], izo:["Изобразительное искусство","Холматова С.","arts"],
+  fk:["Физкультура","Абдуллаев У.","pe"], tex:["Технология","Мирзаев О.","tech"], inf:["Информатика","Мирзаев О.","tech"]
+};
+var DAYS = ["Пн","Вт","Ср","Чт","Пт","Сб"];
+var BASE = [
+  ["kel","alg","ona","alg","eng","ist"],
+  ["ona","fiz","cf","alg","alg","geo"],
+  ["alg","eng","gap","bio","lit","fk"],
+  ["eng","ist","bio","fk","gap","izo"],
+  ["fk","ona","fiz","eng","vos","inf"],
+  ["lit","gg","tex","rus","ona",""]
+];
+var IMPROVED = {"1,2":"geo","2,2":"fiz","3,4":"alg"}; // после «Улучшить»: окна и накладка в 7-A убраны
+var GAPS = {"5-G":[[2,1],[3,3],[4,5]], "8-E":[[1,4],[3,0]]};  // окна других классов (для «Показать»)
+var TEACHERS = [
+  ["Абдуллаев У.","Физкультура",24,"—","Сб 5–6"],["Ахмедова Н.","Английский язык",18,"Пт",""],["Исмоилов Ф.","Биология, География",21,"Ср",""],
+  ["Каримова Д.","История, Воспитание, Kelajak soati",22,"Пн",""],["Мирзаев О.","Технология, Информатика",20,"Чт","Вт 1–2"],["Назарова Г.","Физика",19,"Ср",""],
+  ["Рахимов Б.","Английский язык",16,"Пт",""],["Саидова Л.","Русский язык",18,"Вт",""],["Турсунов Ж.","Алгебра, Геометрия",25,"Чт",""],
+  ["Холматова С.","Изобразительное искусство, Музыка",14,"Сб",""],["Юсупова М.","Родной язык, Литература",23,"Вт",""],["Юлдашева К.","Начальные классы",20,"Сб","Пт 5"]
+];
+var SUBJECTS = [["Родной язык","ona","lang","Ona tili"],["Литература","lit","lang","Adabiyot"],["Английский язык","eng","lang","Ingliz tili"],["Русский язык","rus","lang","Rus tili"],
+  ["Алгебра","alg","math","Algebra"],["Геометрия","geo","math","Geometriya"],["Физика","fiz","sci","Fizika"],["Биология","bio","sci","Biologiya"],["География","gg","sci","Geografiya"],
+  ["История","ist","soc","Tarix"],["Воспитание","vos","soc","Tarbiya"],["Kelajak soati","kel","soc","Kelajak soati"],["Изобразительное искусство","izo","arts","Tasviriy san'at"],
+  ["Физкультура","fk","pe","Jismoniy tarbiya"],["Технология","tex","tech","Texnologiya"],["Информатика","inf","tech","Informatika"]];
+var ROOMS = [["101","Обычный",30,"1-A"],["102","Обычный",30,"1-B"],["211","Обычный",32,"7-A"],["214","Обычный",30,"—"],["301","Кабинет физики",30,"—"],["302","Кабинет химии",28,"—"],["305","Компьютерный класс",15,"—"],["С/З","Спортзал",60,"—"]];
+var RULES = [
+  ["«Kelajak soati» (Час будущего) — первым уроком в понедельник у всех классов?","Приказ МДШО №308: классный час идёт каждый понедельник первым уроком."],
+  ["Математика в 1–4 классах — первым уроком, в понедельник — вторым?","Правило методистов: в понедельник первым идёт «Kelajak soati»."],
+  ["В школе есть методические дни (дни профразвития) учителей?","ПП-231 и приказ №246: в свой день учитель предмета уроков не ведёт."]
+];
+var GUESS = [["10-A","Финансы и экономика","экономика 3 ч, предпринимательство"],["10-B","Информационные технологии (IT)","информатика 4 ч"],["11-G","Естественные науки","химия и биология по 3 ч"]];
+/* Проблемы проверки и куда ведёт «Показать» (П-4) */
+var ISSUES = [
+  {g:0, text:"Турсунов Ж. — Ср 2-й урок: 7-A и 8-B", scr:"grid", by:true, hlT:"Турсунов Ж."},
+  {g:1, text:"5-G — 3 окна", scr:"grid", cls:"5-G"},
+  {g:1, text:"8-E — 2 окна", scr:"grid", cls:"8-E"},
+  {g:1, text:"7-A — Ср 3-й, Пт 4-й урок", scr:"grid", cls:"7-A"},
+  {g:2, text:"Кабинет 214 — Вт 3-й урок: 6-A и 6-B", scr:"grid", cls:"6-A", hl:[2,1], pop:"room"},
+  {g:2, text:"Кабинет 305 — Чт 5-й урок: 9-G и 10-V", scr:"grid", cls:"9-G", hl:[4,3], pop:"room"},
+  {g:3, text:"«Kelajak soati» не первым уроком в Пн: 4-D, 5-G, 7-E, 8-B, 10-G, 11-J", scr:"grid", cls:"4-D", hl:[0,0]},
+  {g:4, text:"9-B — Информатика: 1 ч, по приказу 2 ч", scr:"load", par:"9", hlS:"Информатика"}
+];
+var IGROUPS = [["alert-octagon","Накладки учителей"],["clock-pause","Окна у классов"],["door","Кабинеты заняты двумя классами"],["calendar-x","Правила школы"],["file-text","Сверка с учебным планом — рекомендации"]];
+
+/* ================= СОСТОЯНИЕ ================= */
+function fresh(){ return { mode:"bot", bot:"start", scr:"grid", cls:"7-A", par:"7", openPar:"7", panel:null, by:false, hlT:null, hl:null, popKind:null, improved:false, showChg:false,
+  modal:null, dd:false, menu:false, uploaded:false, ans:{}, jas:null, jasCls:{"5-A":1,"6-A":1}, dirAns:{}, dirYes:null, selTransfer:"7-A", done:{"5-G":1},
+  notes:true, empty:false, hasSchedule:true, issue:null, path:"import" }; }
+var st = fresh();
+
+var BOT = {
+  start:{t:"Старт"},
+  i1:{t:"Загрузка", path:"import", n:0}, i2:{t:"О школе", path:"import", n:1}, i3:{t:"Результат", path:"import", n:2},
+  s1:{t:"Школа и классы", path:"scratch", n:0}, s2:{t:"О школе", path:"scratch", n:1}, s3:{t:"Учителя", path:"scratch", n:2}, s4:{t:"План", path:"scratch", n:3}, s5:{t:"Результат", path:"scratch", n:4}, s6:{t:"Результат", path:"scratch", n:4}
+};
+var PATHS = { import:["i1","i2","i3"], scratch:["s1","s2","s3","s4","s6"] };
+var SCR = {
+  school:["building","Школа и правила"], classes:["users-group","Классы"], teachers:["user","Учителя"], subjects:["book","Предметы"], rooms:["door","Кабинеты"], load:["list-numbers","Нагрузка"],
+  grid:["table","Сетка"], check:["shield-check","Проверка"], transfer:["arrow-back-up","Перенос в eMaktab"], print:["printer","Печать и Excel"], upload:["upload","Загрузить из eMaktab"]
+};
+var STEPS = ["school","classes","teachers","load","grid","check","transfer"]; // главные шаги (П-7)
+
+/* ================= ПОМОЩНИКИ ================= */
+function note(txt, stage2){ return '<div class="note"><i class="ti ti-info-circle"></i><div>'+(stage2?'<span class="st2">этап 2</span>':'')+txt+'</div></div>'; }
+function st2(){ return '<span class="st2b">этап 2</span>'; }
+function tile(cls, icon, v, l){ return '<div class="tile '+cls+'"><div class="ic"><i class="ti ti-'+icon+'"></i></div><div><div class="v">'+v+'</div><div class="l">'+l+'</div></div></div>'; }
+function yn(key, val){ return '<span class="yn2"><span class="'+(val==="yes"?"on":"")+'" data-act="yn" data-k="'+key+'" data-v="yes">Да</span><span class="'+(val==="no"?"on":"")+'" data-act="yn" data-k="'+key+'" data-v="no">Нет</span></span>'; }
+function stepState(k){
+  if(st.empty) return "todo";
+  if(k === "load") return "warn";
+  if(k === "grid") return st.hasSchedule ? "done" : "todo";
+  if(k === "check") return !st.hasSchedule ? "todo" : (st.improved ? "done" : "warn");
+  if(k === "transfer") return st.improved ? (Object.keys(st.done).length >= 12 ? "done" : "todo") : "todo";
+  return "done";
+}
+function topbar(){
+  return '<div class="top"><div class="logo"><i class="ti ti-calendar-time"></i>Конструктор расписания</div>'
+    + '<div class="seg"><span class="'+(st.mode==="bot"?"on":"")+'" data-act="mode" data-v="bot">Помощник</span><span class="'+(st.mode==="kon"?"on":"")+'" data-act="mode" data-v="kon">Конструктор</span></div><div class="sp"></div>'
+    + '<span class="chip">Oʻzbekcha</span><span class="chip" data-act="menu"><i class="ti ti-dots"></i></span>'
+    + (st.menu ? '<div class="menu"><div><i class="ti ti-device-floppy"></i>Сохранить копию на компьютер</div><div><i class="ti ti-folder-open"></i>Восстановить из копии</div><div><i class="ti ti-help-circle"></i>Как пользоваться</div><hr><div class="danger" data-act="wipe"><i class="ti ti-trash"></i>Стереть всё и начать заново</div></div>' : '')
+    + '</div>';
+}
+function side(){
+  var nc = ISSUES.filter(function(x){ return x.g < 4; }).length;
+  var badge = {school:'<span class="b ok">✓</span>', classes:'<span class="n">50</span>', teachers:'<span class="n">85</span>', subjects:'<span class="n">131</span>', rooms:'<span class="n">57</span>',
+    load:'<span class="b w">3</span>', grid:'', check:(!st.hasSchedule?'':(st.improved?'<span class="b w">2</span>':'<span class="b w">'+nc+'</span>')), transfer:(st.improved?'<span class="n">12</span>':''), print:'', upload:''};
+  if(st.empty) badge = {};
+  function item(k){ return '<div class="nav'+(st.scr===k?" on":"")+'" data-go="'+k+'"><i class="ti ti-'+SCR[k][0]+'"></i>'+SCR[k][1]+(badge[k]||'')+'</div>'; }
+  return '<div class="side"><div class="grp">Данные школы</div>'+["school","classes","teachers","subjects","rooms","load"].map(item).join("")
+    + '<div class="grp">Расписание</div>'+["grid","check","transfer","print"].map(item).join("")
+    + '<div class="sep"></div>'+item("upload")+'</div>';
+}
+function crumb(){
+  var i = STEPS.indexOf(st.scr); if(i < 0) return "";
+  return '<div class="crumb"><span>Шаг '+(i+1)+' из 7</span><span class="segbar">'+STEPS.map(function(k){
+    var s = stepState(k); return '<span class="'+(k===st.scr?"c":(s==="done"?"d":(s==="warn"?"w":"")))+'" title="'+SCR[k][1]+'"></span>'; }).join("")+'</span></div>';
+}
+function footNav(){
+  var i = STEPS.indexOf(st.scr); if(i < 0) return "";
+  var prev = i > 0 ? STEPS[i-1] : null, next = i < STEPS.length-1 ? STEPS[i+1] : null;
+  return '<div class="foot">'+(prev?'<span class="btn" data-go="'+prev+'"><i class="ti ti-arrow-left"></i>'+SCR[prev][1]+'</span>':'')+'<div class="sp"></div>'
+    + (stepState(st.scr)==="warn"?'<span class="fnote">Можно идти дальше и с замечаниями</span>':'')
+    + (next?'<span class="btn pri" data-go="'+next+'">Дальше: '+SCR[next][1]+' <i class="ti ti-arrow-right"></i></span>':'')+'</div>';
+}
+function cellHtml(code, r, d){
+  var key = r+","+d;
+  if(st.improved && st.cls === "7-A" && IMPROVED[key]) code = IMPROVED[key];
+  var chg = st.improved && st.showChg && st.cls === "7-A" && IMPROVED[key];
+  if(code === "gap") return '<div class="cell gap"><i class="ti ti-clock-pause"></i> окно</div>';
+  if(code === "cf") return '<div class="cell cf"><i class="ti ti-alert-octagon"></i> накладка</div>';
+  if(!code) return '';
+  var s = S[code], g = G[s[2]], lock = (r === 0 && d === 0 && st.cls === "7-A"), sel = st.hl && st.hl[0] === r && st.hl[1] === d;
+  return '<div class="cell'+(sel?" sel":"")+(chg?" chg":"")+'" data-act="cell" data-r="'+r+'" data-d="'+d+'" style="--grp:'+g[0]+';--gbg:'+g[1]+'"><div class="s">'+s[0]+(lock?'<i class="ti ti-lock"></i>':'')+'</div><div class="t">'+s[1]+'</div></div>';
+}
+function gridFor(cls){
+  var shift = CLASSES.indexOf(cls) % 6;
+  var g = BASE.map(function(row, r){
+    return row.map(function(c, d){
+      if(cls === "7-A") return c;
+      var src = BASE[(r + shift) % 6][(d + shift) % 6];
+      return (src === "gap" || src === "cf") ? "ona" : src;
+    });
+  });
+  if(cls === "4-D") g[0][0] = "alg";                      // Kelajak soati не на месте
+  (GAPS[cls] || []).forEach(function(p){ if(!(st.improved)) g[p[0]][p[1]] = "gap"; });
+  return g;
+}
+function legend(){
+  return '<div class="legend"><span><i class="sw" style="background:#fff;border:2px solid var(--alarm)"></i>Окно</span><span><i class="sw" style="background:var(--danger-bg);border:2px solid var(--danger)"></i>Накладка</span><span><i class="ti ti-lock"></i>Закреплён</span>'
+    + (st.improved ? '<span><i class="sw" style="background:var(--accent);border-radius:50%;width:9px;height:9px"></i>Изменён при улучшении</span>' : '')
+    + Object.keys(G).map(function(k){ return '<span><i class="sw" style="background:'+G[k][1]+'"></i>'+G[k][2]+'</span>'; }).join("") + '</div>';
+}
+function issueStrip(){
+  if(st.issue === null) return "";
+  var n = ISSUES.length, it = ISSUES[st.issue];
+  return '<div class="istrip"><i class="ti ti-alert-triangle" style="color:var(--warn);font-size:18px"></i><b>Проблема '+(st.issue+1)+' из '+n+'</b><span class="t">'+it.text+'</span><div class="sp"></div>'
+    + (st.issue>0?'<span class="btn sm" data-issue="'+(st.issue-1)+'"><i class="ti ti-arrow-left"></i>Предыдущая</span>':'')
+    + (st.issue<n-1?'<span class="btn sm pri" data-issue="'+(st.issue+1)+'">Следующая <i class="ti ti-arrow-right"></i></span>':'')
+    + '<span class="link" data-act="backCheck">Вернуться к проверке</span></div>';
+}
+function goIssue(i){
+  var it = ISSUES[i];
+  st.mode = "kon"; st.scr = it.scr; st.issue = i; st.panel = null; st.dd = false; st.empty = false;
+  st.by = !!it.by; st.hlT = it.hlT || null; st.hl = it.hl || null; st.popKind = it.pop || null;
+  if(it.cls){ st.cls = it.cls; st.par = it.cls.split("-")[0]; }
+  if(it.par) st.par = it.par;
+  st.hlS = it.hlS || null;
+}
+
+/* ================= ПОМОЩНИК ================= */
+function botSteps(){
+  var b = BOT[st.bot]; if(!b.path) return "";
+  var list = PATHS[b.path];
+  return '<div class="track">'+list.map(function(k, i){
+    var cls = i < b.n ? "done" : (i === b.n ? "on" : "");
+    return '<div class="tstep '+cls+'"><span class="c">'+(i < b.n ? '<i class="ti ti-check"></i>' : (i+1))+'</span>'+BOT[k].t+'</div>';
+  }).join("")+'</div>';
+}
+function aboutSchool(path){
+  var a = st.ans, h = '<div class="bcard"><h4>О школе</h4><p class="lead">Ответьте на вопросы — составление учтёт ответы, а проверка покажет, где расписание их нарушает. Всё можно поменять потом в «Школа и правила».</p>';
+  h += '<div class="qsec">Правила школы</div>';
+  RULES.forEach(function(r, i){
+    h += '<div class="qrow"><div class="qt"><b>'+r[0]+'</b><span class="h">'+r[1]+'</span>'
+      + (i === 2 && a[2] === "yes" ? '<div class="sub">Дни по предметам: Пн — история, воспитание · Вт — родной и узбекский язык · Ср — физика, химия, биология, география · Чт — математика, информатика · Пт — английский · Сб — начальные классы. <span class="link">Изменить</span></div>' : '')
+      + '</div>'+yn("r"+i, a[i])+'</div>';
+  });
+  h += '<div class="qsec">Классы</div>';
+  h += '<div class="qrow"><div class="qt"><b>В школе есть классы «Жасорат»?</b><span class="h">Классы по программе «Жасорат» учатся по своему учебному плану — подставлю его.</span>'
+    + (st.jas === "yes" ? '<div class="sub">Отметьте классы «Жасорат»:<div class="cl">'+["5-A","5-B","5-G","5-V","6-A","6-B","6-G","6-V"].map(function(c){ return '<span class="'+(st.jasCls[c]?"on":"")+'" data-act="jasCls" data-v="'+c+'">'+c+'</span>'; }).join("")+'</div></div>' : '')
+    + '</div>'+yn("jas", st.jas)+'</div>';
+  if(path === "import"){
+    h += '<div class="qsec">Направления — проверьте нашу догадку по предметам классов</div>';
+    GUESS.forEach(function(gs, i){
+      h += '<div class="qrow"><div class="qt"><b>'+gs[0]+' — направление «'+gs[1]+'»?</b><span class="h">В нагрузке класса: '+gs[2]+'.</span></div>'+yn("d"+i, st.dirAns[i])+'</div>';
+    });
+    h += '<p class="fnote" style="margin:8px 0 0">Остальные классы 7–11 — без направления. Поправить можно в «Классах».</p>';
+  } else {
+    h += '<div class="qrow"><div class="qt"><b>Есть классы с направлением (7–11 класс)?</b><span class="h">Например, «Информационные технологии» или «Финансы и экономика» — у них свой план по приказу.</span>'
+      + (st.dirYes === "yes" ? '<div class="sub">Выберите направление только у нужных классов, у остальных оставьте «Без направления».<div class="dirl">'
+        + ["10-A","10-B","10-E","11-B","11-G"].map(function(c){ return '<b>'+c+'</b><div class="inp">'+(c==="10-B"?"Информационные технологии (IT)":"Без направления")+' <i class="ti ti-chevron-down"></i></div>'; }).join("")
+        + '</div><p class="fnote" style="margin:8px 0 0">… ещё 7–9 классы. Не помните — укажите позже в «Классах».</p></div>' : '')
+      + '</div>'+yn("dirYes", st.dirYes)+'</div>';
+  }
+  h += '<div class="bfoot"><span class="btn pri big" data-bot="'+(path==="import"?"i3":"s3")+'">'+(path==="import"?"Проверить расписание":"Дальше")+' <i class="ti ti-arrow-right"></i></span><div class="sp"></div><span class="link" data-bot="'+(path==="import"?"i1":"s1")+'">← Назад</span></div></div>';
+  return h;
+}
+function botBody(){
+  var s = st.bot;
+  if(s === "start") return note("Первый экран. Помощник — отдельный экран, без меню конструктора. Два пути: проверить расписание из eMaktab или составить новое.")
+    + '<div class="bcard"><h4>Проверю ваше расписание или составлю новое</h4><p class="lead">Расписание уже есть в eMaktab?</p>'
+    + '<div class="opt"><div data-bot="i1"><i class="ti ti-file-check"></i><b>Да — проверить и улучшить</b><span>Загрузите расписание из eMaktab. Покажу накладки, окна и что поправить.</span></div>'
+    + '<div data-bot="s1"><i class="ti ti-sparkles"></i><b>Нет — составить новое</b><span>Классы, план по приказу и учителя — большую часть заполню сама.</span></div></div>'
+    + '<div class="bfoot"><div class="sp"></div><span class="link" data-act="mode" data-v="kon">Открыть конструктор →</span></div></div>';
+
+  if(s === "i1") return note("П-1: блок «Что стоит поправить в eMaktab» убран. После выбора файлов — короткий итог и «Дальше».")
+    + '<div class="bcard"><h4>Загрузите данные из eMaktab</h4><p class="lead">Классы, учителя, кабинеты и расписание заполнятся сами.</p>'
+    + '<div class="drop'+(st.uploaded?" done":"")+'" data-act="upload"><i class="ti ti-'+(st.uploaded?"circle-check":"table")+'"></i><div><b>Сетка расписания по всем учителям</b><span>'+(st.uploaded?"grid.xls · 1 731 урок":"emaktab.uz → Образование → Расписание → «Учителя» → «Сетка расписания по всем учителям» → Экспорт")+'</span></div></div>'
+    + '<div class="drop'+(st.uploaded?" done":"")+'" data-act="upload"><i class="ti ti-'+(st.uploaded?"circle-check":"list-details")+'"></i><div><b>Учебная нагрузка</b><span>'+(st.uploaded?"load.xls · 900 строк":"emaktab.uz → Отчёты → Административные → «Учебная нагрузка» → Экспорт")+'</span></div></div>'
+    + (st.uploaded ? '<div class="kpi" style="margin-top:14px;margin-bottom:0"><div><b>50</b><span>классов</span></div><div><b>85</b><span>учителей</span></div><div><b>57</b><span>кабинетов</span></div><div><b>1 731</b><span>урок в неделю</span></div></div>' : '')
+    + '<div class="bfoot">'+(st.uploaded ? '<span class="btn pri big" data-bot="i2">Дальше <i class="ti ti-arrow-right"></i></span>' : '<span class="btn pri big" data-act="upload"><i class="ti ti-upload"></i>Выбрать файлы</span>')+'<div class="sp"></div><span class="link" data-bot="start">← Назад</span></div></div>';
+
+  if(s === "i2") return note("П-2: один экран «О школе» — все вопросы сразу, как карточка «Правила школы» в 0.11. Направления — вопросами «да / нет» по нашей догадке.") + aboutSchool("import");
+  if(s === "s2") return note("П-2: тот же экран «О школе», что в пути «проверить». Направления угадать не из чего — общий вопрос, при «Да» — список классов.") + aboutSchool("scratch");
+
+  if(s === "i3") return note("Итог — 4 цифры и 3 главные проблемы. «Показать» открывает место проблемы в конструкторе с полоской «1 из N» (П-4). «Улучшить» — этап 2, кнопка уже на месте.", true)
+    + '<div class="bcard"><h4>Проверила ваше расписание</h4><p class="lead">50 классов · 85 учителей · неделя 14–20 сентября</p>'
+    + '<div class="kpi"><div class="w"><b>1</b><span>накладка учителей</span></div><div class="w"><b>49</b><span>окон у классов</span></div><div class="w"><b>2</b><span>кабинета заняты дважды</span></div><div class="w"><b>6</b><span>классов без «Kelajak soati» в Пн</span></div></div>'
+    + '<p class="probh">Что исправить в первую очередь</p><ul class="prob">'
+    + '<li><i class="ti ti-alert-octagon"></i><span>Турсунов Ж. в Ср на 2-м уроке сразу в 7-A и 8-B</span><span class="go" data-issue="0">Показать →</span></li>'
+    + '<li><i class="ti ti-clock-pause"></i><span>Больше всего окон — в 5-G и 8-E</span><span class="go" data-issue="1">Показать →</span></li>'
+    + '<li><i class="ti ti-door"></i><span>Кабинеты 214 и 305 заняты двумя классами одновременно</span><span class="go" data-issue="4">Показать →</span></li></ul>'
+    + '<div class="bfoot"><span class="btn pri big" data-act="improve"><i class="ti ti-wand"></i>Улучшить, меняя как можно меньше'+st2()+'</span><span class="btn big" data-kon="grid"><i class="ti ti-table"></i>Открыть расписание</span><div class="sp"></div><span class="link" data-kon="transfer">Перенести в eMaktab →</span></div></div>'
+    + '<p class="bnote">Всё, что нашла проверка, сохранено — раздел «Проверка» в конструкторе.</p>';
+
+  if(s === "s1") return note("Путь «с нуля»: школа и классы на одном экране. Сразу после — «О школе» (П-2), до плана: «Жасорат» и направления меняют план.")
+    + '<div class="bcard"><h4>Школа и классы</h4><p class="lead">Сколько классов в каждой параллели? Буквы подставлю сама: A, B, C…</p>'
+    + '<div class="field"><label>Тип школы</label><div class="segs"><span class="on">Критериальная</span><span>Классическая</span></div></div>'
+    + '<div class="field"><label>Язык обучения большинства классов</label><div class="segs"><span class="on">узбекский</span><span>русский</span><span>другой…</span></div></div>'
+    + '<div class="field"><label>Учебных дней в неделю</label><div class="segs"><span>5</span><span class="on">6</span></div></div>'
+    + '<div class="field"><label>Классов в параллели</label><div class="pgrid">'+Object.keys(PAR).map(function(g){ return '<div>'+g+' класс <span class="stepper"><span>−</span><span>'+PAR[g].length+'</span><span>+</span></span></div>'; }).join("")+'</div></div>'
+    + '<div class="bfoot"><span class="btn pri big" data-bot="s2">Дальше <i class="ti ti-arrow-right"></i></span><div class="sp"></div><span class="link" data-bot="start">← Назад</span></div></div>';
+
+  if(s === "s3") return note("Учителя — из выгрузки «Сотрудники» eMaktab или списком.")
+    + '<div class="bcard"><h4>Учителя</h4><p class="lead">Загрузите список сотрудников из eMaktab — повара и охранники не попадут в учителя.</p>'
+    + '<div class="drop done"><i class="ti ti-circle-check"></i><div><b>Сотрудники</b><span>staff.xls · 85 учителей из 112 сотрудников</span></div></div>'
+    + '<table class="tbl"><thead><tr><th>Учитель</th><th>Должность в eMaktab</th><th></th></tr></thead><tbody>'
+    + TEACHERS.slice(0,5).map(function(t){ return '<tr class="row"><td>'+t[0]+'</td><td class="muted">Учитель · '+t[1].split(",")[0]+'</td><td><span class="check on">✓</span></td></tr>'; }).join("")
+    + '<tr><td colspan="3" class="muted">… и ещё 80</td></tr></tbody></table>'
+    + '<div class="bfoot"><span class="btn pri big" data-bot="s4">Дальше <i class="ti ti-arrow-right"></i></span><span class="btn">Добавить вручную</span><div class="sp"></div><span class="link" data-bot="s2">← Назад</span></div></div>';
+
+  if(s === "s4") return note("План заполняется сам по приказу №133 — с учётом «Жасорат» и направлений с экрана «О школе».")
+    + '<div class="bcard"><h4>Учебный план готов</h4><p class="lead">Заполнила план по приказу №133 для 50 классов и подставила учителей по их предметам.</p>'
+    + '<div class="kpi"><div class="g"><b>50</b><span>классов с планом</span></div><div><b>1 612</b><span>уроков в неделю</span></div><div class="g"><b>94%</b><span>уроков с учителем</span></div><div class="w"><b>12</b><span>предметов без учителя</span></div></div>'
+    + '<div class="card" style="margin:0"><h4 style="font-size:13.5px">Без учителя — можно назначить сейчас или потом</h4><div class="hint" style="margin:0">Информатика в 9-A…9-V, Технология в 5-G, Музыка в 3-D … Составить можно и так — эти уроки останутся неразмещёнными.</div></div>'
+    + '<div class="bfoot"><span class="btn pri big" data-bot="s5"><i class="ti ti-sparkles"></i>Составить расписание</span><span class="link" data-kon="load">Назначить учителей в конструкторе</span><div class="sp"></div><span class="link" data-bot="s3">← Назад</span></div></div>';
+
+  if(s === "s5") return '<div class="bcard" style="text-align:center"><h4>Составляю расписание…</h4><p class="lead" style="margin:0">Расставляю 1 612 уроков, учитываю правила школы и методические дни.</p><div class="progress"><div></div></div><span class="muted" style="font-size:12.5px">Обычно это меньше минуты</span>'
+    + '<div class="bfoot" style="justify-content:center"><span class="btn" data-bot="s6">(в макете) Готово →</span></div></div>';
+
+  if(s === "s6") return note("Итог пути «с нуля» — те же цифры, что в проверке, и одна главная кнопка.")
+    + '<div class="bcard"><h4>Расписание готово</h4><p class="lead">1 612 уроков за 25 секунд · 50 классов · 85 учителей</p>'
+    + '<div class="kpi"><div class="g"><b>0</b><span>накладок учителей</span></div><div class="w"><b>3</b><span>окна у классов</span></div><div class="g"><b>3 из 3</b><span>правил школы</span></div><div class="w"><b>14</b><span>уроков не размещено</span></div></div>'
+    + '<p class="probh">Что осталось сделать</p><ul class="prob"><li><i class="ti ti-user-question"></i><span>14 уроков без учителя — назначьте, и я их расставлю</span><span class="go" data-kon="load">Показать →</span></li>'
+    + '<li><i class="ti ti-clock-pause"></i><span>3 окна — в 9-E, 10-B, 11-G</span><span class="go" data-kon="grid">Показать →</span></li></ul>'
+    + '<div class="bfoot"><span class="btn pri big" data-kon="grid"><i class="ti ti-table"></i>Открыть расписание</span><span class="btn big" data-kon="print"><i class="ti ti-download"></i>Скачать Excel</span></div></div>';
+  return "";
+}
+
+/* ================= КОНСТРУКТОР ================= */
+var K = {};
+K.school = function(){
+  return note("Всё про школу целиком — в одном месте: тип, звонки, правила школы, методические дни, «Жасорат». Те же ответы, что на экране помощника «О школе».")
+    + '<div class="ph"><div><h3>Школа и правила</h3><p>Правила учитываются при составлении и в проверке.</p></div></div>'
+    + '<div class="cols2"><div class="card"><h4>Школа</h4><p class="hint">Уроки нумеруются по всей школе, как в eMaktab.</p>'
+    + '<div class="field"><label>Тип школы</label><div class="segs"><span class="on">Критериальная</span><span>Классическая</span></div></div>'
+    + '<div class="field"><label>Уроков в школе</label><div class="inp">1–7 <i class="ti ti-chevron-down"></i></div></div>'
+    + '<div class="field"><label>Классы «Жасорат»</label><div class="inp">5-A, 6-A <i class="ti ti-chevron-down"></i></div></div></div>'
+    + '<div class="card"><h4>Звонки</h4><p class="hint">Время — в сетке, листах учителей и печати.</p><table class="tbl"><tbody>'
+    + [["1","08:00–08:45"],["2","08:50–09:35"],["3","09:45–10:30"],["4","10:40–11:25"]].map(function(x){ return '<tr><td style="width:40px;font-weight:600">'+x[0]+'</td><td>'+x[1]+'</td></tr>'; }).join("")
+    + '<tr><td colspan="2" class="link">Все 7 уроков и перемены →</td></tr></tbody></table></div></div>'
+    + '<div class="card"><h4>Правила школы</h4><p class="hint">Включено — составление учтёт, проверка покажет нарушения.</p>'
+    + RULES.map(function(r, i){ return '<div class="rule"><div class="sw2'+(st.ans[i]==="no"?" off":"")+'" data-act="toggleRule" data-i="'+i+'"></div><div><b>'+r[0].replace("?","")+'</b><span>'+r[1]+'</span></div></div>'; }).join("")
+    + '</div><div class="card"><h4>Методические дни по предметам</h4><p class="hint">День учителя берётся по его предметам. Поменять день конкретного учителя — в «Учителях».</p><table class="tbl"><thead><tr><th>День</th><th>Предметы</th></tr></thead><tbody>'
+    + [["Пн","История, Воспитание, Основы государства и права"],["Вт","Родной язык, Узбекский язык"],["Ср","Физика, Химия, Биология, География, Экономика"],["Чт","Математика, Информатика"],["Пт","Английский язык"],["Сб","Начальные классы"]].map(function(x){ return '<tr class="row"><td style="width:60px;font-weight:600">'+x[0]+'</td><td>'+x[1]+'</td></tr>'; }).join("")
+    + '</tbody></table></div>';
+};
+function clsVals(c){ // дни / с урока / уроков: [значение, своё?]
+  var g = +c.split("-")[0], days = g < 5 ? 5 : 6, les = g < 5 ? 5 : 6;
+  return { days:(c === "7-B" ? [5,true] : [days,false]), start:[1,false], les:(c === "6-V" ? [5,true] : [les,false]) };
+}
+function vcell(v){ return v[1] ? '<span class="tag diff">'+v[0]+' · своё</span>' : '<span class="inh">'+v[0]+'</span>'; }
+K.classes = function(){
+  if(st.empty) return '<div class="ph"><div><h3>Классы</h3></div></div><div class="empty"><i class="ti ti-users-group big"></i><h4>Добавьте классы школы</h4><p>Загрузите из eMaktab — классы, учителя и расписание заполнятся сами. Или создайте классы 1-A … 11-A.</p>'
+    + '<span class="btn pri" data-go="upload"><i class="ti ti-upload"></i>Загрузить из eMaktab</span> <span class="btn" data-act="unempty">Создать 1-A … 11-A</span></div>';
+  var rows = '';
+  Object.keys(PAR).forEach(function(g){
+    var open = g === st.openPar, days = g < 5 ? 5 : 6, les = g < 5 ? 5 : 6;
+    rows += '<tr class="par" data-act="par" data-v="'+g+'"><td><i class="ti ti-chevron-'+(open?"down":"right")+' caret"></i>'+g+' класс <span class="muted" style="font-weight:400">· '+PAR[g].length+'</span></td><td>'+days+(g==="7"?' <span class="tag diff">7-B: 5</span>':'')+'</td><td>1</td><td>'+les+(g==="6"?' <span class="tag diff">6-V: 5</span>':'')+'</td><td class="muted">—</td><td class="muted">—</td><td></td></tr>';
+    if(open) PAR[g].split("").forEach(function(l){
+      var c = g+"-"+l, sel = st.panel === c, v = clsVals(c);
+      rows += '<tr class="row'+(sel?" sel":"")+'" data-act="panel" data-v="'+c+'"><td style="padding-left:34px">'+c+'</td><td>'+vcell(v.days)+'</td><td>'+vcell(v.start)+'</td><td>'+vcell(v.les)+'</td><td>'+(c==="7-B"?"русский":"узбекский")+'</td><td>'+(c==="7-V"?'<span class="tag w">проверьте</span>':'Без направления')+'</td><td>'+(26+CLASSES.indexOf(c)%5)+'</td></tr>';
+    });
+  });
+  return note("П-3: у каждого класса видны настоящие значения. Серые — как в параллели, оранжевые «своё» — отличаются (7-B — 5 дней, 6-V — 5 уроков). Откройте 6 класс.")
+    + '<div class="ph"><div><h3>Классы</h3><p>50 классов в 11 параллелях. Общее задаётся параллели, отличия — у класса.</p></div><div class="sp"></div><span class="btn pri"><i class="ti ti-plus"></i>Добавить класс</span></div>'
+    + '<div class="bar"><span class="search"><i class="ti ti-search"></i>Найти класс</span><div class="sp"></div><span class="link">Развернуть все</span></div>'
+    + '<table class="tbl"><thead><tr><th>Класс</th><th>Дни</th><th>С урока</th><th>Уроков в день</th><th>Язык</th><th>Направление</th><th>Учеников</th></tr></thead><tbody>'+rows+'</tbody></table>';
+};
+function classPanel(c){
+  var v = clsVals(c);
+  function fld(label, val, opts){ return '<div class="field"><label>'+label+'</label>'+(val[1] ? '<div class="inp">'+val[0]+' — своё <span class="link" style="font-size:12px">как в параллели</span></div>' : '<div class="inp inh">как в параллели — '+val[0]+' <i class="ti ti-chevron-down"></i></div>')+'</div>'; }
+  return '<div class="panel"><div class="ph2"><h4>'+c+'</h4><div class="sp"></div><i class="ti ti-x muted" data-act="close" style="cursor:pointer"></i></div>'
+    + '<p class="hint">Пунктир — как в параллели. Изменили — станет «своё».</p>'
+    + '<div class="field"><label>Название</label><div class="inp">'+c+'</div></div>'
+    + '<div class="field"><label>Язык обучения</label><div class="inp">'+(c==="7-B"?"русский":"узбекский")+' <i class="ti ti-chevron-down"></i></div></div>'
+    + fld("Учебных дней", v.days) + fld("С урока", v.start) + fld("Уроков в день", v.les)
+    + '<div class="field"><label>Направление</label><div class="inp">Без направления (базовый план) <i class="ti ti-chevron-down"></i></div></div>'
+    + '<div class="field"><label>Учеников</label><div class="inp">26</div></div>'
+    + '<div class="pfoot"><span class="link" data-go="load">Нагрузка '+c+' →</span><div class="sp"></div><span class="btn dng"><i class="ti ti-trash"></i>Удалить</span></div></div>';
+}
+K.teachers = function(){
+  return note("Всё про учителя — в одной строке и одной панели: предметы, часы, методический день, когда не может вести уроки.")
+    + '<div class="ph"><div><h3>Учителя</h3><p>Кто ведёт уроки и когда не может. Предметы учителя подставляются из «Нагрузки».</p></div><div class="sp"></div><span class="btn pri"><i class="ti ti-plus"></i>Добавить учителя</span></div>'
+    + '<div class="bar"><span class="search"><i class="ti ti-search"></i>Найти учителя</span><div class="sp"></div><span class="tag w">1 учитель перегружен</span></div>'
+    + '<table class="tbl"><thead><tr><th>Учитель</th><th>Предметы</th><th>Часов</th><th>Метод. день</th><th>Не может</th></tr></thead><tbody>'
+    + TEACHERS.map(function(t){ var sel = st.panel === t[0];
+      return '<tr class="row'+(sel?" sel":"")+'" data-act="panel" data-v="'+t[0]+'"><td style="font-weight:600">'+t[0]+'</td><td>'+t[1]+'</td><td>'+(t[2]>24?'<span class="tag w">'+t[2]+'</span>':t[2])+'</td><td>'+t[3]+'</td><td>'+(t[4]||'<span class="muted">—</span>')+'</td></tr>'; }).join("")
+    + '<tr><td colspan="5" class="muted">… и ещё 73</td></tr></tbody></table>';
+};
+function teacherPanel(name){
+  var t = TEACHERS.filter(function(x){ return x[0] === name; })[0] || TEACHERS[4];
+  var cells = '<div></div>' + DAYS.map(function(d){ return '<div class="h">'+d+'</div>'; }).join("");
+  for(var r = 1; r <= 6; r++){ cells += '<div class="h">'+r+'</div>'; for(var d = 0; d < 6; d++){
+    var off = (DAYS[d] === t[3]) || (t[4] === "Вт 1–2" && d === 1 && r <= 2) || (t[4] === "Сб 5–6" && d === 5 && r >= 5) || (t[4] === "Пт 5" && d === 4 && r === 5);
+    cells += '<div class="c'+(off?" off":"")+'"></div>'; } }
+  return '<div class="panel"><div class="ph2"><h4>'+t[0]+'</h4><div class="sp"></div><i class="ti ti-x muted" data-act="close" style="cursor:pointer"></i></div>'
+    + '<p class="hint">'+t[2]+' ч в неделю · '+t[1]+'</p>'
+    + '<div class="field"><label>Методический день</label><div class="segs">'+["по предметам","Пн","Вт","Ср","Чт","Пт","Сб","нет"].map(function(x, i){ return '<span class="'+(i===0?"on":"")+'">'+x+'</span>'; }).join("")+'</div><p class="hint" style="margin:6px 0 0">По предметам — '+t[3]+'.</p></div>'
+    + '<div class="field"><label>Когда может вести уроки — нажмите на ячейку, чтобы закрыть</label><div class="avail">'+cells+'</div></div>'
+    + '<div class="field"><label>Не больше уроков в день</label><div class="inp inh">без ограничения</div></div>'
+    + '<div class="pfoot"><span class="link" data-go="load">Уроки учителя в «Нагрузке» →</span></div></div>';
+}
+K.subjects = function(){
+  return note("Необязательный раздел — не входит в шаги, «Дальше» здесь нет. Название в eMaktab нужно для переноса.")
+    + '<div class="ph"><div><h3>Предметы</h3><p>131 предмет. Цвет группы — в сетке расписания.</p></div><div class="sp"></div><span class="btn pri"><i class="ti ti-plus"></i>Добавить предмет</span></div>'
+    + '<div class="bar"><span class="search"><i class="ti ti-search"></i>Найти предмет</span><div class="sp"></div>'+Object.keys(G).map(function(k){ return '<span class="tag"><span class="dot" style="background:'+G[k][0]+'"></span>'+G[k][2]+'</span>'; }).join(" ")+'</div>'
+    + '<table class="tbl"><thead><tr><th>Предмет</th><th>Группа</th><th>В eMaktab</th><th>Не ставить на уроки</th></tr></thead><tbody>'
+    + SUBJECTS.map(function(s){ return '<tr class="row"><td style="font-weight:600"><span class="dot" style="background:'+G[s[2]][0]+'"></span>'+s[0]+'</td><td>'+G[s[2]][2]+'</td><td class="muted">'+s[3]+'</td><td>'+(s[1]==="fk"?'1-й':'<span class="muted">—</span>')+'</td></tr>'; }).join("")+'</tbody></table>';
+};
+K.rooms = function(){
+  return note("Необязательный раздел. Тип нужен, чтобы информатика шла в компьютерном классе.")
+    + '<div class="ph"><div><h3>Кабинеты</h3><p>57 кабинетов. Специальные — только для своих предметов.</p></div><div class="sp"></div><span class="btn pri"><i class="ti ti-plus"></i>Добавить кабинет</span></div>'
+    + '<table class="tbl"><thead><tr><th>Кабинет</th><th>Тип</th><th>Мест</th><th>Закреплён за классом</th></tr></thead><tbody>'
+    + ROOMS.map(function(r){ return '<tr class="row"><td style="font-weight:600">'+r[0]+'</td><td>'+(r[1]==="Обычный"?'<span class="muted">Обычный</span>':'<span class="tag i">'+r[1]+'</span>')+'</td><td>'+r[2]+'</td><td>'+r[3]+'</td></tr>'; }).join("")+'</tbody></table>';
+};
+K.load = function(){
+  var cls = PAR[st.par].split("").map(function(l){ return st.par+"-"+l; });
+  var subj = [["Родной язык",4,"Юсупова М."],["Литература",2,"Юсупова М."],["Английский язык",3,"Ахмедова Н."],["Алгебра",4,"Турсунов Ж."],["Геометрия",2,"Турсунов Ж."],["Физика",2,"Назарова Г."],["Биология",2,"Исмоилов Ф."],["Информатика",1,null],["Физкультура",2,"Абдуллаев У."],["Kelajak soati",1,"Каримова Д."]];
+  return issueStrip() + note("Нагрузка параллели: предмет × классы, часы и учитель в одной ячейке.")
+    + '<div class="ph"><div><h3>Нагрузка</h3><p>Кто что ведёт и сколько часов. Часы по приказу №133 подставляются сами.</p></div><div class="sp"></div><span class="btn"><i class="ti ti-file-text"></i>Подставить по приказу №133</span></div>'
+    + '<div class="bar">'+Object.keys(PAR).map(function(g){ return '<span class="cls'+(g===st.par?" on":"")+'" data-act="par" data-v="'+g+'">'+g+'</span>'; }).join("")+'<div class="sp"></div><span class="tag w">3 предмета без учителя</span></div>'
+    + '<table class="tbl load"><thead><tr><th>Предмет</th>'+cls.map(function(c){ return '<th>'+c+'</th>'; }).join("")+'<th></th></tr></thead><tbody>'
+    + subj.map(function(s){ return '<tr class="row'+(st.hlS===s[0]?" hl":"")+'"><td style="font-weight:600">'+s[0]+'</td>'+cls.map(function(c, i){
+        var t = s[2] || (i === 0 ? "Мирзаев О." : null), h = s[1];
+        if(st.hlS === s[0] && c === "9-B") return '<td><div class="x"><b style="color:var(--warn)">1 ч · по приказу 2</b><span>Мирзаев О.</span></div></td>';
+        return '<td><div class="x'+(t?"":" no")+'"><b>'+h+' ч</b><span>'+(t||"нет учителя")+'</span></div></td>'; }).join("")+'<td class="link" style="font-size:12px">→ на всю параллель</td></tr>'; }).join("")
+    + '</tbody></table>';
+};
+K.check = function(){
+  if(!st.hasSchedule) return '<div class="ph"><div><h3>Проверка</h3><p>Появится, когда будет расписание.</p></div></div><div class="empty"><i class="ti ti-shield-check big"></i><h4>Проверять пока нечего</h4><p>Составьте расписание или загрузите его из eMaktab.</p><span class="btn pri" data-go="grid">К сетке</span></div>';
+  var groups = IGROUPS.map(function(g, gi){ return {g:g, items:ISSUES.map(function(x, i){ return [x, i]; }).filter(function(p){ return p[0].g === gi; })}; });
+  if(st.improved) groups.forEach(function(gr, gi){ gr.items = gi === 1 ? [[{text:"9-E — Ср 3-й урок"}, 1],[{text:"10-B — Пт 2-й урок"}, 1]] : (gi === 4 ? gr.items : []); });
+  var cnt = {0:1, 1:49, 2:2, 3:6, 4:22}; if(st.improved) cnt = {0:0, 1:8, 2:0, 3:0, 4:22};
+  return note("П-4: «Показать» ведёт к месту проблемы — сетка класса с подсветкой, строка учителя, карточка урока с кабинетом или «Нагрузка». Над ней — «Проблема N из M».")
+    + '<div class="ph"><div><h3>Проверка</h3><p>Что мешает расписанию и что стоит поправить. Обновляется сама после каждой правки.</p></div><div class="sp"></div>'
+    + (st.improved?'':'<span class="btn pri" data-act="improve"><i class="ti ti-wand"></i>Улучшить'+st2()+'</span>')+'</div>'
+    + '<div class="tiles">'+(st.improved
+      ? tile("t-ok","circle-check","0","накладок учителей")+tile("t-w","clock-pause","8","окон у классов")+tile("t-ok","door","0","кабинетов заняты дважды")+tile("t-ok","checklist","3 из 3","правил школы")
+      : tile("t-w","alert-octagon","1","накладка учителей")+tile("t-w","clock-pause","49","окон у классов")+tile("t-w","door","2","кабинета заняты дважды")+tile("t-w","checklist","6","нарушений правил школы"))+'</div>'
+    + groups.map(function(gr, gi){ var n = cnt[gi]; return '<div class="acc"><div class="hd"><i class="ti ti-'+gr.g[0]+'" style="font-size:18px;color:'+(n?"var(--warn)":"var(--ok)")+'"></i>'+gr.g[1]+'<span class="tag '+(n?"w":"ok")+'">'+(n||"нет")+'</span></div>'
+      + (gr.items.length ? '<div class="bd">'+gr.items.map(function(p){ return '<div class="it">'+p[0].text+'<span class="go" data-issue="'+p[1]+'">Показать →</span></div>'; }).join("")+(gi===1&&!st.improved?'<div class="it muted">… ещё 44 окна в 20 классах</div>':'')+(gi===4?'<div class="it muted">… ещё 21</div>':'')+'</div>' : '') + '</div>'; }).join("");
+};
+K.grid = function(){
+  if(!st.hasSchedule){
+    return note("П-5: расписания ещё нет — одна кнопка «Составить расписание» и готовность данных. «Перестроить ▾» появится, когда расписание будет.")
+      + '<div class="ph"><div><h3>Сетка</h3><p>Расписания ещё нет.</p></div></div>'
+      + '<div class="empty" style="text-align:left;padding:10px 0"><h4 style="margin-top:0">Всё готово к составлению?</h4><p>Проверила данные школы:</p><ul class="ready">'
+      + '<li><i class="ti ti-circle-check" style="color:var(--ok)"></i>Классы — 50</li>'
+      + '<li><i class="ti ti-circle-check" style="color:var(--ok)"></i>Учителя — 85</li>'
+      + '<li><i class="ti ti-circle-check" style="color:var(--ok)"></i>Правила школы — ответы есть</li>'
+      + '<li><i class="ti ti-alert-triangle" style="color:var(--warn)"></i>Нагрузка — 3 предмета без учителя, эти уроки не встанут<span class="go" data-go="load">Назначить →</span></li></ul>'
+      + '<span class="btn pri big" data-act="build"><i class="ti ti-sparkles"></i>Составить расписание</span> <span class="fnote" style="margin-left:8px">Можно и с замечаниями</span></div>';
+  }
+  var cls = st.cls, g = cls.split("-")[0];
+  var h = issueStrip() + note(st.improved
+    ? "После «Улучшить»: синяя точка — изменённые уроки. Итоги сверху — «было → стало»."
+    : "Нажмите на урок — карточка с учителем, кабинетом и замком. «Перестроить ▾» — два варианта.", st.improved)
+    + '<div class="ph"><div><h3>Сетка</h3><p>Расписание по '+(st.by?"учителям":"классам")+'. Уроки можно менять местами перетаскиванием.</p></div><div class="sp"></div>'
+    + '<span class="btn" data-act="by"><i class="ti ti-'+(st.by?"users-group":"user")+'"></i>'+(st.by?"По классам":"По учителям")+'</span>'
+    + '<div class="dd"><span class="btn pri" data-act="dd"><i class="ti ti-refresh"></i>Перестроить <i class="ti ti-chevron-down"></i></span>'
+    + (st.dd ? '<div class="ddm"><div data-act="improve"><b>Улучшить, меняя как можно меньше'+st2()+'</b><span>Уроки остаются на местах, если им ничего не мешает. В eMaktab придётся поменять меньше.</span></div>'
+      + '<div data-act="rebuild"><b>Составить заново</b><span>Все уроки расставятся с нуля. Закреплённые останутся на месте.</span></div></div>' : '')
+    + '</div></div>'
+    + '<div class="tiles">'+(st.improved
+      ? tile("t-ok","circle-check","0","накладок учителей")+tile("t-w","clock-pause","<s style='color:var(--ink-soft);font-weight:500;font-size:14px'>49</s> 8","окон у классов")+tile("t-ok","checklist","3 из 3","правил школы")+tile("t-i","arrow-back-up","41","ячейка — перенести в eMaktab")
+      : tile("t-w","alert-octagon","1","накладка учителей")+tile("t-w","clock-pause","49","окон у классов")+tile("t-w","checklist","6","нарушений правил школы")+tile("t-ok","circle-check","0","не размещено"))+'</div>';
+  if(st.by){
+    h += '<div class="bar"><span class="search"><i class="ti ti-search"></i>Найти учителя</span><div class="sp"></div><span class="pill w"><i class="ti ti-clock-pause"></i>Окна учителей: 34</span></div>'
+      + '<table class="tt"><thead><tr><th style="width:130px">Учитель</th>'+DAYS.map(function(d){ return "<th>"+d+"</th>"; }).join("")+'</tr></thead><tbody>'
+      + TEACHERS.map(function(t, i){ var hl = st.hlT === t[0];
+        return '<tr class="'+(hl?"hl":"")+'"><td style="font-weight:600;font-size:12.5px">'+t[0]+'</td>'+DAYS.map(function(d, j){
+          if(d === t[3]) return '<td><div class="x e muted">метод. день</div></td>';
+          if(t[0] === "Турсунов Ж." && d === "Ср" && !st.improved) return '<td><div class="x cf">2-й урок: 7-A + 8-B</div></td>';
+          var k = (i + j) % 5; return '<td><div class="x'+(k===3&&i===2?" g":"")+'">'+(k===3&&i===2?"окно":["7-A 8-B 9-E","6-A 7-V","8-E 9-B 10-G","5-G 6-B","10-B 11-V"][k])+'</div></td>'; }).join("")+'</tr>'; }).join("")
+      + '</tbody></table>';
+    return h;
+  }
+  h += '<div class="bar"><span style="font-size:12.5px;color:var(--ink-soft);font-weight:600">'+g+' класс:</span>'
+    + PAR[g].split("").map(function(l){ var c = g+"-"+l; return '<span class="cls'+(c===cls?" on":"")+'" data-act="cls" data-v="'+c+'">'+c+'</span>'; }).join("")
+    + '<span class="link" style="margin-left:6px" data-act="nextPar">Другой класс ▾</span><div class="sp"></div>'
+    + (st.improved ? '<span class="pill i" data-act="showChg"><i class="ti ti-point-filled"></i>'+(st.showChg?"Скрыть изменения":"Показать изменения")+'</span>' : '') + '</div>';
+  var grid = gridFor(cls);
+  h += '<div class="gwrap"><table class="g"><thead><tr><th class="n"></th>'+DAYS.map(function(d){ return "<th>"+d+"</th>"; }).join("")+'</tr></thead><tbody>';
+  grid.forEach(function(row, r){ h += '<tr><td class="n">'+(r+1)+'</td>'+row.map(function(c, d){ return "<td>"+cellHtml(c, r, d)+"</td>"; }).join("")+'</tr>'; });
+  h += '</tbody></table>';
+  if(st.popKind && st.hl){
+    var r = st.hl[0], d = st.hl[1], left = d >= 4 ? 'calc(34px + (100% - 34px) / 6 * '+d+' - 256px)' : 'calc(34px + (100% - 34px) / 6 * '+(d+1)+' + 6px)';
+    var code = grid[r][d], s = S[code] || S.ona;
+    h += '<div class="pop" style="left:'+left+';top:'+(30 + r*54)+'px"><b>'+s[0]+' · '+cls+'</b><span class="muted" style="font-size:12px">'+DAYS[d]+', '+(r+1)+'-й урок</span>'
+      + '<div class="row"><span>Учитель</span><span>'+s[1]+' ▾</span></div>'
+      + '<div class="row'+(st.popKind==="room"?" hl":"")+'"><span>Кабинет</span><span>'+(st.popKind==="room"?'<b style="display:inline;color:var(--warn)">'+(cls==="6-A"?"214":"305")+' — занят</b> ▾':'211 ▾')+'</span></div>'
+      + (st.popKind==="room"?'<div class="row"><span>Свободны</span><span class="link">216, 218, 302</span></div>':'')
+      + '<div class="row"><span>Закрепить</span><span><i class="ti ti-lock-open"></i> нет</span></div>'
+      + '<div class="row"><span class="link" data-act="closePop">Закрыть</span><span class="link">Убрать урок</span></div></div>';
+  }
+  h += '</div>' + legend();
+  return h;
+};
+K.transfer = function(){
+  if(!st.improved) return note("Перенос появляется, когда расписание отличается от загруженного из eMaktab.")
+    + '<div class="ph"><div><h3>Перенос в eMaktab</h3><p>Список того, что поменять в eMaktab вручную.</p></div></div>'
+    + '<div class="empty"><i class="ti ti-arrow-back-up big"></i><h4>Пока переносить нечего</h4><p>Расписание совпадает с тем, что загружено из eMaktab. Поправьте сетку или нажмите «Улучшить» — здесь появится список изменений по классам.</p><span class="btn pri" data-act="improve"><i class="ti ti-wand"></i>Улучшить расписание'+st2()+'</span></div>';
+  var list = [["5-G",6],["7-A",3],["7-E",2],["8-B",4],["8-E",6],["9-E",3],["10-B",5],["10-G",2],["11-J",4],["4-D",2],["6-A",2],["9-G",2]];
+  var sel = st.selTransfer;
+  return note("Список изменений по классам, названия — как в eMaktab. Отметка «перенесено» — чтобы не запутаться.")
+    + '<div class="ph"><div><h3>Перенос в eMaktab</h3><p>Что поменять в eMaktab: emaktab.uz → Образование → Расписание → «Генератор уроков» → класс.</p></div><div class="sp"></div><span class="btn"><i class="ti ti-printer"></i>Печать списка</span></div>'
+    + '<div class="tiles">'+tile("t-i","users-group","12","классов")+tile("t-i","table","41","ячейка")+tile("t-i","user-share","1","замена педагога")+tile("t-ok","circle-check",Object.keys(st.done).length+" из 12","перенесено")+'</div>'
+    + '<div style="display:grid;grid-template-columns:220px minmax(0,1fr);gap:14px">'
+    + '<table class="tbl"><thead><tr><th>Класс</th><th>Ячеек</th><th></th></tr></thead><tbody>'
+    + list.map(function(x){ return '<tr class="row'+(x[0]===sel?" sel":"")+'" data-act="selT" data-v="'+x[0]+'"><td style="font-weight:600">'+x[0]+'</td><td>'+x[1]+'</td><td><span class="check'+(st.done[x[0]]?" on":"")+'">'+(st.done[x[0]]?"✓":"")+'</span></td></tr>'; }).join("")+'</tbody></table>'
+    + '<div class="card" style="margin:0"><h4>'+sel+'</h4><p class="hint">Откройте в eMaktab схему класса '+sel+' и поменяйте эти ячейки.</p><ul class="chg-list">'
+    + '<li><span class="k">Ср 2</span><span class="op rep">заменить</span><span>Algebra → <b>Geometriya</b> · Tursunov J. · каб. 211</span></li>'
+    + '<li><span class="k">Ср 3</span><span class="op add">добавить</span><span><b>Fizika</b> · Nazarova G. · каб. 301</span></li>'
+    + '<li><span class="k">Пт 4</span><span class="op add">добавить</span><span><b>Algebra</b> · Tursunov J. · каб. 211</span></li></ul>'
+    + '<div class="pfoot"><span class="btn '+(st.done[sel]?"":"pri")+'" data-act="markDone"><i class="ti ti-check"></i>'+(st.done[sel]?"Перенесено":"Отметить: перенесено")+'</span><div class="sp"></div><span class="link">Схема '+sel+' целиком →</span></div></div></div>'
+    + '<div class="card" style="margin-top:12px"><h4>Замена педагога — одним действием в eMaktab</h4><p class="hint" style="margin:0">Информатика, 9-A … 9-V: Mirzaev O. → Qodirov A. (emaktab.uz → Расписание → «Замена педагога»)</p></div>';
+};
+K.print = function(){
+  return note("Необязательный раздел. Копия данных и «Стереть всё» — в меню «⋯» в шапке.")
+    + '<div class="ph"><div><h3>Печать и Excel</h3><p>Расписание для стенда, учителей и завуча.</p></div></div>'
+    + '<div class="cols2">'
+    + '<div class="card"><h4><i class="ti ti-file-spreadsheet" style="color:var(--ok)"></i> Excel</h4><p class="hint">Все классы и все учителя — по листам, плюс лист «Все классы».</p><span class="btn pri"><i class="ti ti-download"></i>Скачать Excel</span></div>'
+    + '<div class="card"><h4><i class="ti ti-printer" style="color:var(--accent)"></i> Печать класса</h4><p class="hint">Лист А4 для стенда и дневника.</p><span class="btn">Выбрать класс</span></div>'
+    + '<div class="card"><h4><i class="ti ti-user" style="color:var(--accent)"></i> Печать учителя</h4><p class="hint">Личное расписание учителя с кабинетами и временем.</p><span class="btn">Выбрать учителя</span></div>'
+    + '<div class="card"><h4><i class="ti ti-layout-grid" style="color:var(--accent)"></i> Шахматка всех классов</h4><p class="hint">Все классы на одном листе — для завуча.</p><span class="btn">Печатать</span></div></div>';
+};
+K.upload = function(){
+  return note("Загрузка из eMaktab — одно место в конструкторе. Повторная загрузка спрашивает, что сделать с правками.")
+    + '<div class="ph"><div><h3>Загрузить из eMaktab</h3><p>Классы, учителя, кабинеты, нагрузка и расписание — из двух выгрузок eMaktab.</p></div></div>'
+    + '<div class="drop done"><i class="ti ti-circle-check"></i><div><b>Загружено 29 сентября</b><span>grid.xls · неделя 14–20 сентября · 1 731 урок · load.xls · 900 строк</span></div><div class="sp"></div><span class="btn">Загрузить заново</span></div>'
+    + '<div class="card"><h4>Загрузить заново — что будет с вашими правками</h4><p class="hint" style="margin:0">Спрошу перед загрузкой: оставить ваши правки в сетке или заменить всё тем, что сейчас в eMaktab. Список изменений для переноса пересчитается.</p></div>';
+};
+
+/* ================= РЕНДЕР ================= */
+function modal(){
+  if(st.modal === "improve") return '<div class="shade"><div class="modal"><h4>Расписание улучшено</h4><p class="lead">Уроки остались на местах везде, где им ничего не мешало. Закреплённые уроки не тронуты.</p>'
+    + '<div class="cmp"><div class="good"><span>Окна у классов</span><b><s>49</s>8</b></div><div class="good"><span>Накладки учителей</span><b><s>1</s>0</b></div><div class="good"><span>Кабинеты дважды</span><b><s>2</s>0</b></div></div>'
+    + '<div class="card" style="background:#F7F9FC;border:none"><h4 style="font-size:14px">В eMaktab поменять 41 ячейку в 12 классах</h4><p class="hint" style="margin:0">Больше всего — в 5-G и 8-E. Список по классам — в «Переносе в eMaktab».</p></div>'
+    + '<div class="macts"><span class="btn pri" data-act="mGrid"><i class="ti ti-eye"></i>Показать изменения</span><span class="btn" data-act="mTransfer"><i class="ti ti-arrow-back-up"></i>Перенести в eMaktab</span><div class="sp"></div><span class="link" data-act="undo">Отменить</span></div></div></div>';
+  if(st.modal === "built") return '<div class="shade"><div class="modal"><h4>Расписание составлено</h4><p class="lead">1 612 уроков за 25 секунд. Правила школы и методические дни учтены.</p>'
+    + '<div class="cmp"><div class="good"><span>Накладки учителей</span><b>0</b></div><div class="w"><span>Окна у классов</span><b>3</b></div><div class="w"><span>Не размещено</span><b>14</b></div></div>'
+    + '<div class="macts"><span class="btn pri" data-act="mBuilt"><i class="ti ti-table"></i>Открыть сетку</span><span class="btn" data-go="check">Что поправить</span></div></div></div>';
+  return "";
+}
+function render(){
+  document.body.classList.toggle("hideNotes", !st.notes);
+  var h = topbar();
+  if(st.mode === "bot"){
+    h += '<div class="botwrap"><div class="bot">'+botSteps()+botBody()+'</div></div>';
+  } else {
+    var withPanel = st.panel && (st.scr === "classes" || st.scr === "teachers");
+    h += '<div class="body'+(withPanel?" withpanel":"")+'">'+side()+'<div class="main"><div class="content">'+crumb()+K[st.scr]()+'</div>'+footNav()+'</div>'
+      + (withPanel ? (st.scr === "classes" ? classPanel(st.panel) : teacherPanel(st.panel)) : '') + '</div>';
+  }
+  h += modal();
+  document.getElementById("root").innerHTML = h;
+  syncJump();
+}
+
+/* ================= НАВИГАЦИЯ ПРОТОТИПА ================= */
+var JUMPS = [["bot:start","Помощник · Старт"],["bot:i1","Помощник · Проверить: загрузка"],["bot:i2","Помощник · Проверить: О школе"],["bot:i3","Помощник · Проверить: результат"],
+  ["bot:s1","Помощник · С нуля: школа и классы"],["bot:s2","Помощник · С нуля: О школе"],["bot:s3","Помощник · С нуля: учителя"],["bot:s4","Помощник · С нуля: план"],["bot:s5","Помощник · С нуля: составляю"],["bot:s6","Помощник · С нуля: результат"],
+  ["kon:school","Конструктор · Школа и правила"],["kon:classes","Конструктор · Классы"],["kon:empty","Конструктор · Классы — пустая школа"],["kon:teachers","Конструктор · Учителя"],["kon:subjects","Конструктор · Предметы"],["kon:rooms","Конструктор · Кабинеты"],
+  ["kon:load","Конструктор · Нагрузка"],["kon:nosched","Конструктор · Сетка — расписания ещё нет"],["kon:grid","Конструктор · Сетка"],["kon:check","Конструктор · Проверка"],["kon:issue","Конструктор · Проверка → «Показать» (кабинет)"],
+  ["kon:improve","Конструктор · Сетка — после «Улучшить» (этап 2)"],["kon:transfer","Конструктор · Перенос в eMaktab"],["kon:print","Конструктор · Печать и Excel"],["kon:upload","Конструктор · Загрузить из eMaktab"]];
+var sel = document.getElementById("jump");
+sel.innerHTML = JUMPS.map(function(j){ return '<option value="'+j[0]+'">'+j[1]+'</option>'; }).join("");
+function syncJump(){
+  var v = st.mode === "bot" ? "bot:"+st.bot : (st.empty ? "kon:empty" : (st.scr === "grid" && !st.hasSchedule ? "kon:nosched" : (st.scr === "grid" && st.improved ? "kon:improve" : (st.issue === 4 ? "kon:issue" : "kon:"+st.scr))));
+  if(JUMPS.some(function(j){ return j[0] === v; })) sel.value = v;
+}
+function jump(v){
+  var p = v.split(":"), notes = st.notes; st = fresh(); st.notes = notes;
+  if(p[0] === "bot"){ st.mode = "bot"; st.bot = p[1]; if(p[1] !== "i1" && p[1] !== "start") st.uploaded = true; }
+  else {
+    st.mode = "kon";
+    if(p[1] === "empty"){ st.scr = "classes"; st.empty = true; }
+    else if(p[1] === "nosched"){ st.scr = "grid"; st.hasSchedule = false; }
+    else if(p[1] === "improve"){ st.scr = "grid"; st.improved = true; st.showChg = true; }
+    else if(p[1] === "issue"){ goIssue(4); }
+    else { st.scr = p[1]; if(p[1] === "classes"){ st.openPar = "6"; st.panel = "6-V"; } if(p[1] === "teachers") st.panel = "Мирзаев О."; }
+  }
+  render(); window.scrollTo(0, 0);
+}
+sel.addEventListener("change", function(){ jump(sel.value); });
+document.getElementById("notes").addEventListener("change", function(e){ st.notes = e.target.checked; render(); });
+
+document.addEventListener("click", function(e){
+  var el = e.target.closest("[data-go],[data-act],[data-bot],[data-kon],[data-issue]");
+  if(!el || el.closest(".proto") && !el.hasAttribute("data-act")) { if(st.menu || st.dd){ st.menu = false; st.dd = false; render(); } return; }
+  var a = el.getAttribute("data-act"), v = el.getAttribute("data-v");
+  if(el.hasAttribute("data-issue")){ goIssue(+el.getAttribute("data-issue")); render(); window.scrollTo(0,0); return; }
+  if(el.hasAttribute("data-bot")){ st.bot = el.getAttribute("data-bot"); if(st.bot === "s6") st.hasSchedule = true; render(); window.scrollTo(0,0); return; }
+  if(el.hasAttribute("data-kon")){ st.mode = "kon"; st.scr = el.getAttribute("data-kon"); st.panel = null; st.empty = false; st.issue = null; st.hl = null; st.popKind = null; st.by = false; render(); window.scrollTo(0,0); return; }
+  if(el.hasAttribute("data-go")){ st.scr = el.getAttribute("data-go"); st.modal = null; st.panel = null; st.dd = false; st.empty = false; st.issue = null; st.hl = null; st.popKind = null; st.by = false; st.hlS = null; render(); window.scrollTo(0,0); return; }
+  if(a !== "menu") st.menu = false;
+  if(a !== "dd") st.dd = false;
+  switch(a){
+    case "mode": st.mode = v; break;
+    case "menu": st.menu = !st.menu; break;
+    case "wipe": st.mode = "kon"; st.empty = true; st.scr = "classes"; st.hasSchedule = false; break;
+    case "unempty": st.empty = false; break;
+    case "reset": st = fresh(); break;
+    case "upload": st.uploaded = true; break;
+    case "yn":
+      var k = el.getAttribute("data-k");
+      if(k[0] === "r") st.ans[+k.slice(1)] = v; else if(k === "jas") st.jas = v; else if(k === "dirYes") st.dirYes = v; else if(k[0] === "d") st.dirAns[+k.slice(1)] = v;
+      break;
+    case "jasCls": if(st.jasCls[v]) delete st.jasCls[v]; else st.jasCls[v] = 1; break;
+    case "par": if(st.scr === "classes") st.openPar = st.openPar === v ? "" : v; else st.par = v; break;
+    case "panel": st.panel = st.panel === v ? null : v; break;
+    case "close": st.panel = null; break;
+    case "toggleRule": var i = +el.getAttribute("data-i"); st.ans[i] = st.ans[i] === "no" ? "yes" : "no"; break;
+    case "by": st.by = !st.by; st.issue = null; st.hlT = null; break;
+    case "dd": st.dd = !st.dd; break;
+    case "improve": st.modal = "improve"; st.improved = true; st.issue = null; st.hl = null; st.popKind = null; break;
+    case "rebuild": alert("В макете: «Составить заново» спросит подтверждение и покажет итоги «было → стало»."); break;
+    case "build": st.modal = "built"; break;
+    case "mBuilt": st.modal = null; st.hasSchedule = true; st.scr = "grid"; break;
+    case "undo": st.modal = null; st.improved = false; st.showChg = false; break;
+    case "mGrid": st.modal = null; st.mode = "kon"; st.scr = "grid"; st.cls = "7-A"; st.par = "7"; st.showChg = true; st.by = false; break;
+    case "mTransfer": st.modal = null; st.mode = "kon"; st.scr = "transfer"; break;
+    case "showChg": st.showChg = !st.showChg; break;
+    case "cls": st.cls = v; st.hl = null; st.popKind = null; break;
+    case "nextPar": var ks = Object.keys(PAR), ni = (ks.indexOf(st.cls.split("-")[0]) + 1) % ks.length; st.cls = ks[ni]+"-"+PAR[ks[ni]][0]; st.hl = null; st.popKind = null; break;
+    case "cell": st.hl = [+el.getAttribute("data-r"), +el.getAttribute("data-d")]; st.popKind = "lesson"; break;
+    case "closePop": st.popKind = null; st.hl = null; break;
+    case "backCheck": st.scr = "check"; st.issue = null; st.hl = null; st.popKind = null; st.by = false; st.hlT = null; st.hlS = null; break;
+    case "selT": st.selTransfer = v; break;
+    case "markDone": if(st.done[st.selTransfer]) delete st.done[st.selTransfer]; else st.done[st.selTransfer] = 1; break;
+  }
+  render();
+});
+render();
+</script>
+</body>
+</html>

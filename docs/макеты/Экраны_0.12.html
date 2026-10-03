@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Экраны 0.12</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+/* Стиль Б «мягкие карточки» + сетка Б1 (решения пользователя 2026-09-29) */
+:root{
+  --ink:#1B2B4B; --ink-soft:#6E7F99; --border:#E1E8F1; --border-strong:#D3DDEA;
+  --accent:#2F7EEA; --accent-soft:#E4EFFD; --panel:#EEF4FB; --page:#F4F7FB;
+  --ok:#2E9E5B; --ok-bg:#E3F5EA; --warn:#B5530F; --warn-bg:#FDEBDD; --alarm:#E8590C; --danger:#E5484D; --danger-bg:#FDECEC;
+  --c-lang-bg:#E7EEFD; --c-lang:#2F6FDE; --c-math-bg:#FDEBDD; --c-math:#C8611A; --c-science-bg:#E1F4EA; --c-science:#23905A;
+  --c-social-bg:#F1E8F8; --c-social:#8A55B8; --c-arts-bg:#FCF1D6; --c-arts:#B3830A; --c-pe-bg:#DDF1F5; --c-pe:#1B879C;
+  --c-tech-bg:#EFEDE8; --c-tech:#7A7465;
+  --shadow:0 1px 2px rgba(16,35,63,.05),0 4px 14px rgba(16,35,63,.05);
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{margin:0;background:#E9EEF5;color:var(--ink);font-family:Inter,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;font-size:14px;-webkit-font-smoothing:antialiased}
+.doc{max-width:1320px;margin:0 auto;padding:24px 16px 80px}
+.doc>h1{font-size:22px;margin:0 0 4px}
+.doc>.sub{color:var(--ink-soft);margin:0 0 18px;max-width:920px}
+.jump{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px}
+.jump a{padding:7px 14px;border:1px solid var(--border-strong);border-radius:10px;background:#fff;color:var(--ink);text-decoration:none;font-weight:600}
+.screen{margin-bottom:48px}
+.screen>h2{margin:0 0 4px;font-size:19px}
+.screen>p{margin:0 0 12px;color:var(--ink-soft);max-width:920px}
+
+.scroller{overflow-x:auto;border-radius:16px}
+.app{min-width:1240px;border-radius:16px;overflow:hidden;background:var(--page);border:1px solid #DCE3ED}
+.top{display:flex;align-items:center;gap:14px;padding:10px 16px;background:#fff;border-bottom:1px solid var(--border)}
+.logo{display:flex;align-items:center;gap:8px;font-weight:800;font-size:15px;white-space:nowrap}
+.logo i{font-size:20px;color:var(--accent)}
+.seg{display:inline-flex;border:1px solid var(--border-strong);border-radius:10px;overflow:hidden;margin-left:12px}
+.seg span{padding:6px 14px;font-weight:600;font-size:13px;color:var(--ink-soft)}
+.seg .on{background:var(--accent);color:#fff}
+.sp{flex:1}
+.chip{padding:6px 10px;border:1px solid var(--border);border-radius:10px;font-size:12.5px;color:var(--ink-soft);white-space:nowrap;background:#fff}
+.body{display:grid;grid-template-columns:220px minmax(0,1fr);gap:14px;padding:14px;min-height:620px}
+.body.withpanel{grid-template-columns:220px minmax(0,1fr) 330px}
+.side,.main,.panel{background:#fff;border-radius:14px;box-shadow:var(--shadow)}
+.side{padding:12px 10px}
+.grp{font-size:11px;font-weight:700;letter-spacing:.04em;color:#9AA8BC;margin:14px 8px 6px;text-transform:uppercase}
+.grp:first-child{margin-top:4px}
+.nav{display:flex;align-items:center;gap:9px;padding:6px 8px;border-radius:10px;font-weight:500;font-size:13.5px;margin-bottom:2px}
+.nav i{width:28px;height:28px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font-size:16px;background:#F1F4F8;color:var(--ink-soft);flex:none}
+.nav .n{margin-left:auto;font-size:12px;color:var(--ink-soft)}
+.nav .b{margin-left:auto;font-size:11.5px;font-weight:700;padding:1px 7px;border-radius:999px}
+.b.w{background:var(--warn-bg);color:var(--warn)} .b.ok{background:var(--ok-bg);color:var(--ok)}
+.nav.on{box-shadow:0 0 0 1.5px var(--accent);color:var(--accent);font-weight:600}
+.nav.on i{background:var(--accent);color:#fff}
+.side .sep{border-top:1px solid var(--border);margin:12px 4px 8px}
+.main{padding:18px 22px 22px;min-width:0}
+.ph{display:flex;align-items:flex-start;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.ph h3{margin:0;font-size:20px;font-weight:700}
+.ph p{margin:3px 0 0;color:var(--ink-soft);font-size:13px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:10px;border:1px solid var(--border-strong);background:#fff;font-weight:600;font-size:13px;color:var(--ink);white-space:nowrap}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.big{padding:11px 18px;font-size:14px}
+.btn i{font-size:16px}
+.link{color:var(--accent);font-weight:600;font-size:13px}
+.search{display:flex;align-items:center;gap:8px;border:1px solid var(--border-strong);border-radius:10px;padding:7px 11px;color:var(--ink-soft);font-size:13px;min-width:240px}
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.tile{border-radius:12px;padding:10px 12px;background:#F7F9FC;display:flex;gap:10px;align-items:center}
+.tile .ic{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex:none}
+.tile .v{font-size:20px;font-weight:700;line-height:1.1}
+.tile .l{font-size:12px;color:var(--ink-soft)}
+.t-ok .ic{background:var(--ok-bg);color:var(--ok)} .t-w .ic{background:var(--warn-bg);color:var(--warn)} .t-w .v{color:var(--warn)}
+
+/* ---------- помощник ---------- */
+.botwrap{padding:28px 16px 40px;display:flex;justify-content:center}
+.bot{width:100%;max-width:760px}
+.steps{display:flex;gap:8px;align-items:center;font-size:12.5px;font-weight:600;color:var(--ink-soft);margin-bottom:14px;justify-content:center}
+.steps .d{padding:4px 11px;border-radius:999px;background:#fff;box-shadow:var(--shadow)}
+.steps .d.done{background:var(--ok-bg);color:var(--ok);box-shadow:none}
+.steps .d.on{background:var(--accent);color:#fff;box-shadow:none}
+.bcard{background:#fff;border-radius:16px;box-shadow:var(--shadow);padding:24px 26px}
+.bcard h4{margin:0 0 4px;font-size:22px}
+.bcard .lead{margin:0 0 18px;color:var(--ink-soft)}
+.kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+.kpi div{border-radius:12px;padding:12px 14px;background:#F7F9FC}
+.kpi b{display:block;font-size:24px}
+.kpi span{font-size:12px;color:var(--ink-soft)}
+.kpi .w b{color:var(--warn)} .kpi .g b{color:var(--ok)}
+.probh{font-size:13px;font-weight:700;margin:0 0 6px}
+.prob{list-style:none;margin:0 0 20px;padding:0}
+.prob li{display:flex;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--border);font-size:13.5px}
+.prob li i.w{color:var(--warn);font-size:18px}
+.prob li .go{margin-left:auto;color:var(--accent);font-weight:600;font-size:12.5px;white-space:nowrap}
+.acts{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.bnote{margin-top:14px;font-size:12.5px;color:var(--ink-soft);text-align:center}
+
+/* ---------- классы ---------- */
+.tbl{width:100%;border-collapse:separate;border-spacing:0}
+.tbl th{white-space:nowrap;font-size:12px;color:var(--ink-soft);font-weight:600;text-align:left;padding:8px 10px;border-bottom:1px solid var(--border)}
+.tbl td{padding:9px 10px;border-bottom:1px solid var(--border);font-size:13.5px;vertical-align:middle}
+.tbl tr.par td{background:#F7F9FC;font-weight:600}
+.tbl tr.par td:first-child{border-radius:10px 0 0 10px} .tbl tr.par td:last-child{border-radius:0 10px 10px 0}
+.tbl tr.sel td{background:var(--accent-soft)}
+.tbl .muted{color:var(--ink-soft);font-weight:400}
+.tag{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:600;background:#F1F4F8;color:var(--ink-soft)}
+.tag.diff{background:#FFF4E5;color:#9A3412}
+.tag.ok{background:var(--ok-bg);color:var(--ok)}
+.tag.w{background:var(--warn-bg);color:var(--warn)}
+.caret{color:var(--ink-soft);margin-right:6px}
+.panel{padding:18px 18px 20px}
+.panel h4{margin:0;font-size:17px}
+.panel .ph2{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.panel .hint{font-size:12.5px;color:var(--ink-soft);margin:0 0 14px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--ink-soft);margin-bottom:5px}
+.inp{border:1px solid var(--border-strong);border-radius:10px;padding:8px 11px;font-size:13.5px;display:flex;align-items:center;justify-content:space-between}
+.inp.inh{color:var(--ink-soft);background:#F7F9FC;border-style:dashed}
+.segs{display:flex;gap:6px;flex-wrap:wrap}
+.segs span{padding:6px 11px;border-radius:9px;border:1px solid var(--border-strong);font-size:13px;font-weight:600}
+.segs .on{background:var(--accent);border-color:var(--accent);color:#fff}
+.pfoot{display:flex;gap:8px;margin-top:16px;padding-top:14px;border-top:1px solid var(--border)}
+
+/* ---------- сетка Б1 ---------- */
+.bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.cls{padding:5px 11px;border-radius:9px;border:1px solid var(--border);font-weight:600;font-size:13px;background:#fff}
+.cls.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent);color:var(--accent)}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:999px;font-weight:600;font-size:12.5px}
+.pill.w{background:var(--warn-bg);color:var(--warn)}
+.pill.r{background:var(--danger-bg);color:#B42318}
+table.g{width:100%;border-collapse:separate;border-spacing:0;table-layout:fixed}
+.g th{font-size:12px;color:var(--ink-soft);font-weight:600;text-align:left;padding:6px 8px}
+.g th.n{width:34px}
+.g td{padding:3px;vertical-align:top}
+.g td.n{text-align:center;color:var(--ink-soft);font-weight:600;font-size:12px;vertical-align:middle}
+.cell{border-radius:9px;padding:6px 8px;min-height:48px;background:color-mix(in srgb,var(--gbg) 60%,#fff)}
+.cell .s{font-weight:600;font-size:12.5px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cell .t{font-size:11.5px;color:var(--grp);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cell .s i{font-size:12px;color:var(--ink-soft);margin-left:3px}
+.cell.gap{background:#fff;border:2px solid var(--alarm);color:var(--alarm);box-shadow:0 0 0 4px #FFE8D9;display:flex;align-items:center;justify-content:center;gap:5px;font-weight:700;font-size:12.5px}
+.cell.cf{background:var(--danger-bg);border:2px solid var(--danger);color:#B42318;display:flex;align-items:center;justify-content:center;gap:5px;font-weight:700;font-size:12.5px}
+.cell.sel{box-shadow:0 0 0 2px var(--accent)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--ink-soft);margin-top:12px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:14px;height:14px;border-radius:4px;display:inline-block}
+.pop{position:absolute;z-index:2;width:250px;background:#fff;border-radius:12px;box-shadow:0 8px 28px rgba(16,35,63,.18);padding:12px 14px;font-size:13px}
+.pop b{display:block;margin-bottom:2px}
+.pop .row{display:flex;justify-content:space-between;padding:6px 0;border-top:1px solid var(--border)}
+.pop .row span:first-child{color:var(--ink-soft)}
+.gwrap{position:relative}
+</style>
+</head>
+<body>
+<div class="doc">
+  <h1>Экраны 0.12 — стиль Б, окно Б1</h1>
+  <p class="sub">Три ключевых экрана новой структуры. Данные вымышленные, кнопки не работают — макет для согласования вида и раскладки.</p>
+  <div class="jump"><a href="#s1">1. Помощник — результат</a><a href="#s2">2. Конструктор — Классы</a><a href="#s3">3. Конструктор — Сетка</a></div>
+
+  <!-- ============ 1. ПОМОЩНИК ============ -->
+  <section class="screen" id="s1">
+    <h2>1. Помощник — результат проверки</h2>
+    <p>Помощник — отдельный экран без меню конструктора. Сверху шаги, в центре одна карточка. Итог — 4 цифры, 3 главные проблемы со ссылкой «Показать» (открывает нужное место в конструкторе) и одна главная кнопка.</p>
+    <div class="scroller"><div class="app">
+      <div class="top"><div class="logo"><i class="ti ti-calendar-time"></i>Конструктор расписания</div>
+        <div class="seg"><span class="on">Помощник</span><span>Конструктор</span></div><div class="sp"></div>
+        <span class="chip">Школа №12</span><span class="chip">Oʻzbekcha</span></div>
+      <div class="botwrap"><div class="bot">
+        <div class="steps"><span class="d done">1 Загрузка</span><i class="ti ti-chevron-right"></i><span class="d done">2 Правила школы</span><i class="ti ti-chevron-right"></i><span class="d on">3 Результат</span></div>
+        <div class="bcard">
+          <h4>Проверила ваше расписание</h4>
+          <p class="lead">Школа №12 · 50 классов · 85 учителей · неделя 14–20 сентября</p>
+          <div class="kpi">
+            <div class="g"><b>0</b><span>накладок учителей</span></div>
+            <div class="w"><b>49</b><span>окон у классов</span></div>
+            <div class="w"><b>2</b><span>кабинета заняты дважды</span></div>
+            <div class="w"><b>6</b><span>классов без «Kelajak soati» в Пн</span></div>
+          </div>
+          <p class="probh">Что исправить в первую очередь</p>
+          <ul class="prob">
+            <li><i class="ti ti-clock-pause w"></i><span>Больше всего окон — в 5-G и 8-E (по 6)</span><span class="go">Показать →</span></li>
+            <li><i class="ti ti-calendar-x w"></i><span>В 6 классах «Kelajak soati» не первым уроком в понедельник</span><span class="go">Показать →</span></li>
+            <li><i class="ti ti-door w"></i><span>Кабинеты 214 и 305 заняты двумя классами одновременно</span><span class="go">Показать →</span></li>
+          </ul>
+          <div class="acts"><span class="btn pri big"><i class="ti ti-table"></i>Открыть расписание</span><span class="btn big"><i class="ti ti-refresh"></i>Составить заново</span><div class="sp"></div><span class="link">Перенести в eMaktab →</span></div>
+        </div>
+        <p class="bnote">Всё, что нашла проверка, сохранено — к нему можно вернуться в конструкторе, раздел «Проверка».</p>
+      </div></div>
+    </div>
+  </div></section>
+
+  <!-- ============ 2. КЛАССЫ ============ -->
+  <section class="screen" id="s2">
+    <h2>2. Конструктор — Классы</h2>
+    <p>Вместо 50 развёрнутых карточек — таблица. Строка параллели задаёт общее (дни, с какого урока, сколько уроков); у класса показано только то, что отличается («свои: 5» — у 7-B пять учебных дней). Нажали на класс — справа панель, серые поля с пунктиром — «как в параллели».</p>
+    <div class="scroller"><div class="app">
+      <div class="top"><div class="logo"><i class="ti ti-calendar-time"></i>Конструктор расписания</div>
+        <div class="seg"><span>Помощник</span><span class="on">Конструктор</span></div><div class="sp"></div>
+        <span class="chip">Школа №12</span><span class="chip">Oʻzbekcha</span><span class="chip"><i class="ti ti-dots"></i></span></div>
+      <div class="body withpanel">
+        <div class="side mount-side" data-on="Классы"></div>
+        <div class="main">
+          <div class="ph"><div><h3>Классы</h3><p>50 классов в 11 параллелях. Общее задаётся параллели, отличия — у класса.</p></div><div class="sp"></div>
+            <span class="btn pri"><i class="ti ti-plus"></i>Добавить класс</span></div>
+          <div class="bar"><span class="search"><i class="ti ti-search"></i>Найти класс</span><div class="sp"></div><span class="link">Развернуть все</span></div>
+          <table class="tbl">
+            <thead><tr><th>Класс</th><th>Дни</th><th>С урока</th><th>Уроков в день</th><th>Язык</th><th>Направление</th><th>Учеников</th></tr></thead>
+            <tbody>
+              <tr class="par"><td><i class="ti ti-chevron-right caret"></i>1 класс <span class="muted">· 5 классов</span></td><td>5</td><td>1</td><td>5</td><td class="muted">—</td><td class="muted">—</td><td></td></tr>
+              <tr class="par"><td><i class="ti ti-chevron-right caret"></i>6 класс <span class="muted">· 4 класса</span></td><td>6</td><td>1</td><td>6 <span class="tag diff">6-V: 5</span></td><td class="muted">—</td><td class="muted">—</td><td></td></tr>
+              <tr class="par"><td><i class="ti ti-chevron-down caret"></i>7 класс <span class="muted">· 4 класса</span></td><td>6</td><td>1</td><td>6</td><td class="muted">—</td><td class="muted">—</td><td></td></tr>
+              <tr><td style="padding-left:34px">7-A</td><td class="muted">как в параллели</td><td class="muted">—</td><td class="muted">—</td><td>узбекский</td><td>Без направления</td><td>28</td></tr>
+              <tr class="sel"><td style="padding-left:34px">7-B</td><td><span class="tag diff">свои: 5</span></td><td class="muted">—</td><td class="muted">—</td><td>русский</td><td>Без направления</td><td>26</td></tr>
+              <tr><td style="padding-left:34px">7-E</td><td class="muted">как в параллели</td><td class="muted">—</td><td class="muted">—</td><td>узбекский</td><td>Без направления</td><td>30</td></tr>
+              <tr><td style="padding-left:34px">7-V</td><td class="muted">как в параллели</td><td class="muted">—</td><td class="muted">—</td><td>узбекский</td><td><span class="tag w">проверьте</span></td><td>27</td></tr>
+              <tr class="par"><td><i class="ti ti-chevron-right caret"></i>8 класс <span class="muted">· 5 классов</span></td><td>6</td><td>1</td><td>6</td><td class="muted">—</td><td class="muted">—</td><td></td></tr>
+              <tr class="par"><td><i class="ti ti-chevron-right caret"></i>10 класс <span class="muted">· 5 классов</span></td><td>6</td><td>1</td><td>6</td><td class="muted">—</td><td class="muted">—</td><td></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="panel">
+          <div class="ph2"><h4>7-B</h4><div class="sp"></div><i class="ti ti-x" style="color:var(--ink-soft)"></i></div>
+          <p class="hint">Пунктир — как в параллели «7 класс». Изменили — станет «своё».</p>
+          <div class="field"><label>Название</label><div class="inp">7-B</div></div>
+          <div class="field"><label>Язык обучения</label><div class="inp">русский <i class="ti ti-chevron-down"></i></div></div>
+          <div class="field"><label>Учебных дней</label><div class="segs"><span class="on">5</span><span>6</span></div></div>
+          <div class="field"><label>С урока</label><div class="inp inh">как в параллели — 1 <i class="ti ti-chevron-down"></i></div></div>
+          <div class="field"><label>Уроков в день</label><div class="inp inh">как в параллели — 6 <i class="ti ti-chevron-down"></i></div></div>
+          <div class="field"><label>Направление</label><div class="inp">Без направления (базовый план) <i class="ti ti-chevron-down"></i></div></div>
+          <div class="field"><label>Учеников</label><div class="inp">26</div></div>
+          <div class="pfoot"><span class="link">Учебный план 7-B →</span><div class="sp"></div><span class="btn" style="color:var(--danger)"><i class="ti ti-trash"></i>Удалить</span></div>
+        </div>
+      </div>
+    </div>
+  </div></section>
+
+  <!-- ============ 3. СЕТКА ============ -->
+  <section class="screen" id="s3">
+    <h2>3. Конструктор — Сетка</h2>
+    <p>На экране только сетка и то, что к ней относится: итоги сверху, класс, «Перестроить». Правила школы и методические дни переехали в «Школа и правила», подробная проверка — в «Проверку». Нажали на урок — карточка с учителем, кабинетом и замком.</p>
+    <div class="scroller"><div class="app">
+      <div class="top"><div class="logo"><i class="ti ti-calendar-time"></i>Конструктор расписания</div>
+        <div class="seg"><span>Помощник</span><span class="on">Конструктор</span></div><div class="sp"></div>
+        <span class="chip">Школа №12</span><span class="chip">Oʻzbekcha</span><span class="chip"><i class="ti ti-dots"></i></span></div>
+      <div class="body">
+        <div class="side mount-side" data-on="Сетка"></div>
+        <div class="main">
+          <div class="ph"><div><h3>Сетка</h3><p>Расписание по классам. Уроки можно менять местами перетаскиванием.</p></div><div class="sp"></div>
+            <span class="btn"><i class="ti ti-user"></i>По учителям</span><span class="btn pri"><i class="ti ti-refresh"></i>Перестроить</span></div>
+          <div class="tiles">
+            <div class="tile t-ok"><div class="ic"><i class="ti ti-circle-check"></i></div><div><div class="v">0</div><div class="l">накладок учителей</div></div></div>
+            <div class="tile t-w"><div class="ic"><i class="ti ti-clock-pause"></i></div><div><div class="v">49</div><div class="l">окон у классов</div></div></div>
+            <div class="tile t-ok"><div class="ic"><i class="ti ti-checklist"></i></div><div><div class="v">3 из 3</div><div class="l">правил школы</div></div></div>
+            <div class="tile t-ok"><div class="ic"><i class="ti ti-circle-check"></i></div><div><div class="v">0</div><div class="l">не размещено</div></div></div>
+          </div>
+          <div class="bar"><span style="font-size:12.5px;color:var(--ink-soft);font-weight:600">7 класс:</span>
+            <span class="cls on">7-A</span><span class="cls">7-B</span><span class="cls">7-E</span><span class="cls">7-V</span><span class="link" style="margin-left:6px">Другой класс ▾</span>
+            <div class="sp"></div><span class="pill w"><i class="ti ti-clock-pause"></i>Окна: 2</span><span class="pill r"><i class="ti ti-alert-octagon"></i>Накладки: 1</span></div>
+          <div class="gwrap mount-grid"></div>
+        </div>
+      </div>
+    </div>
+  </div></section>
+</div>
+
+<script>
+function nav(icon, label, extra, on){ return '<div class="nav'+(on?" on":"")+'"><i class="ti ti-'+icon+'"></i>'+label+(extra||"")+'</div>'; }
+function side(onLabel){
+  var items = [["grp","Данные школы"],["building","Школа и правила",'<span class="b ok">✓</span>'],["users-group","Классы",'<span class="n">50</span>'],
+    ["user","Учителя",'<span class="n">85</span>'],["book","Предметы",'<span class="n">131</span>'],["door","Кабинеты",'<span class="n">57</span>'],
+    ["list-numbers","Нагрузка",'<span class="b w">3</span>'],["grp","Расписание"],["shield-check","Проверка",'<span class="b w">49</span>'],
+    ["table","Сетка",""],["arrow-back-up","Перенос в eMaktab",'<span class="n">12</span>'],["printer","Печать и Excel",""],["sep"],["upload","Загрузить из eMaktab",""]];
+  return items.map(function(x){
+    if(x[0] === "grp") return '<div class="grp">'+x[1]+'</div>';
+    if(x[0] === "sep") return '<div class="sep"></div>';
+    return nav(x[0], x[1], x[2], x[1] === onLabel);
+  }).join("");
+}
+document.querySelectorAll(".mount-side").forEach(function(m){ m.innerHTML = side(m.getAttribute("data-on")); });
+
+var G = {lang:["var(--c-lang)","var(--c-lang-bg)"], math:["var(--c-math)","var(--c-math-bg)"], sci:["var(--c-science)","var(--c-science-bg)"],
+  soc:["var(--c-social)","var(--c-social-bg)"], arts:["var(--c-arts)","var(--c-arts-bg)"], pe:["var(--c-pe)","var(--c-pe-bg)"], tech:["var(--c-tech)","var(--c-tech-bg)"]};
+var S = {
+  kel:["Kelajak soati","Каримова Д.","soc"], ona:["Родной язык","Юсупова М.","lang"], lit:["Литература","Юсупова М.","lang"],
+  eng:["Английский язык","Ахмедова Н.","lang"], rus:["Русский язык","Саидова Л.","lang"],
+  alg:["Алгебра","Турсунов Ж.","math"], geo:["Геометрия","Турсунов Ж.","math"], fiz:["Физика","Назарова Г.","sci"],
+  bio:["Биология","Исмоилов Ф.","sci"], gg:["География","Исмоилов Ф.","sci"], ist:["История","Каримова Д.","soc"],
+  vos:["Воспитание","Каримова Д.","soc"], izo:["Изобразительное искусство","Холматова С.","arts"],
+  fk:["Физкультура","Абдуллаев У.","pe"], tex:["Технология","Мирзаев О.","tech"], inf:["Информатика","Мирзаев О.","tech"]
+};
+var DAYS = ["Пн","Вт","Ср","Чт","Пт","Сб"];
+var GRID = [
+  ["kel","alg","ona","alg","eng","ist"],
+  ["ona","fiz","alg","cf","alg","geo"],
+  ["alg","eng","gap","bio","lit","fk"],
+  ["eng","ist","bio","fk","gap","izo"],
+  ["fk","ona","fiz","eng","vos","inf"],
+  ["lit","gg","tex","rus","ona",""]
+];
+function cell(code, r, d){
+  if(code === "gap") return '<div class="cell gap"><i class="ti ti-clock-pause"></i> окно</div>';
+  if(code === "cf") return '<div class="cell cf"><i class="ti ti-alert-octagon"></i> накладка</div>';
+  if(!code) return '';
+  var s = S[code], g = G[s[2]], lock = (r === 0 && d === 0), sel = (r === 3 && d === 1);
+  return '<div class="cell'+(sel?" sel":"")+'" style="--grp:'+g[0]+';--gbg:'+g[1]+'"><div class="s">'+s[0]+(lock?'<i class="ti ti-lock"></i>':'')+'</div><div class="t">'+s[1]+'</div></div>';
+}
+var h = '<table class="g"><thead><tr><th class="n"></th>' + DAYS.map(function(d){ return "<th>"+d+"</th>"; }).join("") + '</tr></thead><tbody>';
+GRID.forEach(function(row, r){ h += '<tr><td class="n">'+(r+1)+'</td>' + row.map(function(c, d){ return "<td>"+cell(c, r, d)+"</td>"; }).join("") + '</tr>'; });
+h += '</tbody></table>'
+  + '<div class="pop" style="left:calc(34px + (100% - 34px) / 6 * 2 + 6px);top:178px"><b>История · 7-A</b><span style="color:var(--ink-soft);font-size:12px">Вт, 4-й урок</span>'
+  + '<div class="row"><span>Учитель</span><span>Каримова Д. ▾</span></div><div class="row"><span>Кабинет</span><span>211 ▾</span></div>'
+  + '<div class="row"><span>Закрепить</span><span><i class="ti ti-lock-open"></i> нет</span></div></div>'
+  + '<div class="legend"><span><i class="sw" style="background:#fff;border:2px solid var(--alarm)"></i>Окно</span><span><i class="sw" style="background:var(--danger-bg);border:2px solid var(--danger)"></i>Накладка</span><span><i class="ti ti-lock"></i>Закреплён</span>'
+  + '<span><i class="sw" style="background:var(--c-lang-bg)"></i>Языки</span><span><i class="sw" style="background:var(--c-math-bg)"></i>Математика</span>'
+  + '<span><i class="sw" style="background:var(--c-science-bg)"></i>Естественные</span><span><i class="sw" style="background:var(--c-social-bg)"></i>Общество</span>'
+  + '<span><i class="sw" style="background:var(--c-arts-bg)"></i>Искусство</span><span><i class="sw" style="background:var(--c-pe-bg)"></i>Физкультура</span>'
+  + '<span><i class="sw" style="background:var(--c-tech-bg)"></i>Технология</span></div>';
+document.querySelector(".mount-grid").innerHTML = h;
+</script>
+</body>
+</html>

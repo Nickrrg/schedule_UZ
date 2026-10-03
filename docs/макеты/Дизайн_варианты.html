@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Варианты оформления 0.12</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+/* Общие токены — как в index.html (eMaktab: белый, голубые панели, синий акцент, Inter) */
+:root{
+  --ink:#1B2B4B; --ink-soft:#6E7F99; --border:#E1E8F1; --border-strong:#D3DDEA;
+  --accent:#2F7EEA; --accent-soft:#E4EFFD; --panel:#EEF4FB;
+  --ok:#2E9E5B; --ok-bg:#E3F5EA; --warn:#B5530F; --warn-bg:#FDEBDD; --danger:#E5484D; --danger-bg:#FDECEC;
+  --c-lang-bg:#E7EEFD; --c-lang:#2F6FDE; --c-math-bg:#FDEBDD; --c-math:#C8611A; --c-science-bg:#E1F4EA; --c-science:#23905A;
+  --c-social-bg:#F1E8F8; --c-social:#8A55B8; --c-arts-bg:#FCF1D6; --c-arts:#B3830A; --c-pe-bg:#DDF1F5; --c-pe:#1B879C;
+  --c-tech-bg:#EFEDE8; --c-tech:#7A7465;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{margin:0;background:#F6F8FB;color:var(--ink);font-family:Inter,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;font-size:14px;-webkit-font-smoothing:antialiased}
+.doc{max-width:1320px;margin:0 auto;padding:24px 16px 80px}
+.doc h1{font-size:22px;margin:0 0 4px}
+.doc .sub{color:var(--ink-soft);margin:0 0 20px}
+.jump{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:28px}
+.jump a{padding:7px 14px;border:1px solid var(--border-strong);border-radius:10px;background:#fff;color:var(--ink);text-decoration:none;font-weight:600}
+.variant{margin-bottom:56px}
+.vhead{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+.vhead h2{margin:0;font-size:19px}
+.vhead p{margin:0;color:var(--ink-soft)}
+.pair{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:20px;align-items:start}
+@media (max-width:1100px){.pair{grid-template-columns:1fr}}
+.cap{font-size:12px;color:var(--ink-soft);margin:0 0 6px;font-weight:600;text-transform:none}
+
+/* ---------- каркас приложения ---------- */
+.app{border:1px solid var(--border);border-radius:14px;overflow:hidden;background:#fff;min-width:0}
+.top{display:flex;align-items:center;gap:14px;padding:10px 16px;border-bottom:1px solid var(--border);background:#fff}
+.logo{display:flex;align-items:center;gap:8px;font-weight:800;font-size:15px;white-space:nowrap}
+.logo i{font-size:20px;color:var(--accent)}
+.seg{display:inline-flex;border:1px solid var(--border-strong);border-radius:10px;overflow:hidden;margin-left:12px}
+.seg span{padding:6px 14px;font-weight:600;font-size:13px;color:var(--ink-soft)}
+.seg .on{background:var(--accent);color:#fff}
+.top .sp{flex:1}
+.chip{padding:6px 10px;border:1px solid var(--border);border-radius:10px;font-size:12.5px;color:var(--ink-soft);white-space:nowrap;background:#fff}
+.body{display:grid;grid-template-columns:212px minmax(0,1fr);min-height:640px}
+.side{border-right:1px solid var(--border);padding:12px 10px;background:#fff}
+.grp{font-size:11px;font-weight:700;letter-spacing:.04em;color:#9AA8BC;margin:14px 8px 6px;text-transform:uppercase}
+.grp:first-child{margin-top:4px}
+.nav{display:flex;align-items:center;gap:9px;padding:8px 9px;border-radius:9px;color:var(--ink);font-weight:500;font-size:13.5px;position:relative}
+.nav i{font-size:18px;color:var(--ink-soft)}
+.nav .n{margin-left:auto;font-size:12px;color:var(--ink-soft)}
+.nav .b{margin-left:auto;font-size:11.5px;font-weight:700;padding:1px 7px;border-radius:999px}
+.b.w{background:var(--warn-bg);color:var(--warn)} .b.ok{background:var(--ok-bg);color:var(--ok)}
+.nav.on{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.nav.on i{color:var(--accent)}
+.side .sep{border-top:1px solid var(--border);margin:12px 4px 8px}
+.main{padding:18px 22px 24px;min-width:0}
+.ph{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px}
+.ph h3{margin:0;font-size:20px;font-weight:700}
+.ph p{margin:3px 0 0;color:var(--ink-soft);font-size:13px}
+.ph .sp{flex:1}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:10px;border:1px solid var(--border-strong);background:#fff;font-weight:600;font-size:13px;color:var(--ink);white-space:nowrap}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn i{font-size:16px}
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.tile{border:1px solid var(--border);border-radius:12px;padding:10px 12px;background:#fff;display:flex;gap:10px;align-items:center}
+.tile .ic{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex:none}
+.tile .v{font-size:20px;font-weight:700;line-height:1.1}
+.tile .l{font-size:12px;color:var(--ink-soft)}
+.t-ok .ic{background:var(--ok-bg);color:var(--ok)} .t-w .ic{background:var(--warn-bg);color:var(--warn)}
+.t-w .v{color:var(--warn)}
+.bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.cls{padding:5px 11px;border-radius:9px;border:1px solid var(--border);font-weight:600;font-size:13px;background:#fff}
+.cls.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent);color:var(--accent)}
+.bar .sp{flex:1}
+.link{color:var(--accent);font-weight:600;font-size:13px}
+table.g{width:100%;border-collapse:separate;border-spacing:0;table-layout:fixed}
+.g th{font-size:12px;color:var(--ink-soft);font-weight:600;text-align:left;padding:6px 8px}
+.g th.n{width:34px;text-align:center}
+.g td{padding:3px;vertical-align:top}
+.g td.n{text-align:center;color:var(--ink-soft);font-weight:600;font-size:12px;vertical-align:middle}
+.cell{border-radius:9px;padding:6px 8px;min-height:46px;border:1px solid var(--border);background:#fff}
+.cell .s{font-weight:600;font-size:12.5px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cell .t{font-size:11.5px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cell.gap{border:1.5px dashed #F2B38A;background:#FFF7F1;display:flex;align-items:center;justify-content:center;color:var(--warn);font-size:12px;font-weight:600}
+.cell.lock .s::after{content:"\eae2";font-family:"tabler-icons";font-weight:400;margin-left:4px;color:var(--ink-soft);font-size:12px}
+.note{margin-top:10px;font-size:12.5px;color:var(--ink-soft);display:flex;gap:6px;align-items:center}
+
+/* ---------- экран результата помощника ---------- */
+.bot{border:1px solid var(--border);border-radius:14px;background:#fff;overflow:hidden}
+.bot .bt{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.steps{display:flex;gap:6px;align-items:center;font-size:12px;font-weight:600;color:var(--ink-soft);padding:12px 16px 0}
+.steps .d{padding:3px 9px;border-radius:999px;background:#F1F4F8}
+.steps .d.done{background:var(--ok-bg);color:var(--ok)}
+.steps .d.on{background:var(--accent-soft);color:var(--accent)}
+.bot .bb{padding:14px 16px 18px}
+.bot h4{margin:4px 0 4px;font-size:18px}
+.bot .lead{margin:0 0 12px;color:var(--ink-soft);font-size:13px}
+.kpi{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.kpi div{border-radius:10px;padding:8px 10px;background:var(--panel)}
+.kpi b{display:block;font-size:19px}
+.kpi span{font-size:11.5px;color:var(--ink-soft)}
+.kpi .w b{color:var(--warn)}
+.prob{list-style:none;margin:0 0 14px;padding:0}
+.prob li{display:flex;gap:8px;padding:8px 0;border-top:1px solid var(--border);font-size:13px}
+.prob li i{color:var(--warn);font-size:17px;flex:none}
+.bot .acts{display:flex;gap:8px;flex-wrap:wrap}
+
+/* ================= ВАРИАНТ А — «Как eMaktab, аккуратнее» ================= */
+.vA .nav.on::before{content:"";position:absolute;left:-10px;top:6px;bottom:6px;width:3px;border-radius:0 3px 3px 0;background:var(--accent)}
+.vA .tiles .tile{background:var(--panel);border-color:transparent}
+.vA .tile .ic{background:#fff}
+.vA .cell{border-left:3px solid var(--grp)}
+
+/* ================= ВАРИАНТ Б — «Мягкие карточки» ================= */
+.vB .app{background:#F4F7FB;border-color:#E6ECF4}
+.vB .top{background:#fff}
+.vB .body{gap:14px;padding:14px;grid-template-columns:220px minmax(0,1fr)}
+.vB .side{border:none;border-radius:14px;box-shadow:0 1px 2px rgba(16,35,63,.05),0 4px 14px rgba(16,35,63,.05)}
+.vB .nav i{width:28px;height:28px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font-size:16px;background:#F1F4F8}
+.vB .nav.on{background:#fff;box-shadow:0 0 0 1.5px var(--accent)}
+.vB .nav.on i{background:var(--accent);color:#fff}
+.vB .main{background:#fff;border-radius:14px;box-shadow:0 1px 2px rgba(16,35,63,.05),0 4px 14px rgba(16,35,63,.05)}
+.vB .tile{border:none;background:#F7F9FC}
+.vB .tile .ic{border-radius:50%}
+.vB .cell{background:var(--gbg);border-color:transparent}
+.vB .cell .t{color:var(--grp);opacity:.85}
+.vB .cell.gap{background:#FFF7F1}
+.vB .bot{box-shadow:0 1px 2px rgba(16,35,63,.05),0 8px 24px rgba(16,35,63,.07);border-color:#E6ECF4}
+.vB .kpi div{background:#F7F9FC}
+
+/* ================= ВАРИАНТ В — «Голубая навигация» ================= */
+.vC .top{background:#fff;border-bottom:1px solid var(--border)}
+.vC .side{background:var(--panel);border-right:none}
+.vC .grp{color:#7D8FAA}
+.vC .nav.on{background:#fff;color:var(--accent);box-shadow:0 1px 3px rgba(16,35,63,.08)}
+.vC .nav:not(.on) i{color:#7D8FAA}
+.vC .tiles{display:flex;gap:0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.vC .tile{flex:1;border:none;border-radius:0;border-right:1px solid var(--border);flex-direction:column;align-items:flex-start;gap:2px;padding:10px 14px}
+.vC .tile:last-child{border-right:none}
+.vC .tile .ic{display:none}
+.vC .tile .v{font-size:24px}
+.vC .tile.t-ok .v{color:var(--ok)}
+.vC .g th{background:var(--panel)}
+.vC .g th:first-child{border-radius:9px 0 0 9px}
+.vC .g th:last-child{border-radius:0 9px 9px 0}
+.vC .cell{border:none;background:#fff;box-shadow:inset 0 0 0 1px var(--border)}
+.vC .cell .s{display:flex;align-items:center;gap:6px}
+.vC .cell .s::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--grp);flex:none}
+.vC .cell .t{padding-left:14px}
+.vC .bot .bt{background:var(--panel)}
+.vC .kpi div{background:#fff;border:1px solid var(--border)}
+</style>
+</head>
+<body>
+<div class="doc">
+  <h1>Варианты оформления 0.12</h1>
+  <p class="sub">Один и тот же экран «Сетка» в новой структуре (меню слева) и экран результата помощника. Все три — в стиле eMaktab: белая страница, голубые панели, синий акцент, шрифт Inter. Данные вымышленные.</p>
+  <div class="jump"><a href="#A">А — как eMaktab, аккуратнее</a><a href="#B">Б — мягкие карточки</a><a href="#C">В — голубая навигация</a></div>
+
+  <section class="variant vA" id="A">
+    <div class="vhead"><h2>А — как eMaktab, аккуратнее</h2><p>Ближе всего к нынешнему виду. Белое меню, голубые плитки, цвет предмета — полоской слева в ячейке.</p></div>
+    <div class="pair"><div><p class="cap">Конструктор → Сетка</p><div class="mount-app"></div></div><div><p class="cap">Помощник → Результат</p><div class="mount-bot"></div></div></div>
+  </section>
+
+  <section class="variant vB" id="B">
+    <div class="vhead"><h2>Б — мягкие карточки</h2><p>Светло-серый фон, меню и рабочая область — белые карточки с мягкой тенью, иконки в плашках, ячейки залиты цветом группы предметов.</p></div>
+    <div class="pair"><div><p class="cap">Конструктор → Сетка</p><div class="mount-app"></div></div><div><p class="cap">Помощник → Результат</p><div class="mount-bot"></div></div></div>
+  </section>
+
+  <section class="variant vC" id="C">
+    <div class="vhead"><h2>В — голубая навигация</h2><p>Меню на голубой панели eMaktab, итоги — одной строкой с крупными цифрами, ячейки белые с цветной точкой предмета.</p></div>
+    <div class="pair"><div><p class="cap">Конструктор → Сетка</p><div class="mount-app"></div></div><div><p class="cap">Помощник → Результат</p><div class="mount-bot"></div></div></div>
+  </section>
+</div>
+
+<script>
+var G = {lang:["var(--c-lang)","var(--c-lang-bg)"], math:["var(--c-math)","var(--c-math-bg)"], sci:["var(--c-science)","var(--c-science-bg)"],
+  soc:["var(--c-social)","var(--c-social-bg)"], arts:["var(--c-arts)","var(--c-arts-bg)"], pe:["var(--c-pe)","var(--c-pe-bg)"], tech:["var(--c-tech)","var(--c-tech-bg)"]};
+var S = {
+  kel:["Kelajak soati","Каримова Д.","soc"], ona:["Родной язык","Юсупова М.","lang"], lit:["Литература","Юсупова М.","lang"],
+  eng:["Английский язык","Ахмедова Н. / Рахимов Б.","lang"], rus:["Русский язык","Саидова Л.","lang"],
+  alg:["Алгебра","Турсунов Ж.","math"], geo:["Геометрия","Турсунов Ж.","math"], fiz:["Физика","Назарова Г.","sci"],
+  bio:["Биология","Исмоилов Ф.","sci"], gg:["География","Исмоилов Ф.","sci"], ist:["История","Каримова Д.","soc"],
+  vos:["Воспитание","Каримова Д.","soc"], izo:["Изобразительное искусство","Холматова С.","arts"], mus:["Музыка","Холматова С.","arts"],
+  fk:["Физкультура","Абдуллаев У.","pe"], tex:["Технология","Мирзаев О.","tech"], inf:["Информатика","Мирзаев О.","tech"]
+};
+var DAYS = ["Пн","Вт","Ср","Чт","Пт","Сб"];
+var GRID = [
+  ["kel","alg","ona","alg","eng","ist"],
+  ["ona","fiz","alg","ona","alg","geo"],
+  ["alg","eng","gap","bio","lit","fk"],
+  ["eng","ist","bio","fk","gg","izo"],
+  ["fk","ona","fiz","eng","vos","inf"],
+  ["lit","gg","tex","rus","ona",""]
+];
+var LOCK = {"0,0":1};
+function cell(code, r, d){
+  if(code === "gap") return '<div class="cell gap">окно</div>';
+  if(!code) return '';
+  var s = S[code], g = G[s[2]];
+  return '<div class="cell'+(LOCK[r+","+d]?" lock":"")+'" style="--grp:'+g[0]+';--gbg:'+g[1]+'"><div class="s">'+s[0]+'</div><div class="t">'+s[1]+'</div></div>';
+}
+function nav(icon, label, extra, on){ return '<div class="nav'+(on?" on":"")+'"><i class="ti ti-'+icon+'"></i>'+label+(extra||"")+'</div>'; }
+function app(){
+  var h = '<div class="app"><div class="top"><div class="logo"><i class="ti ti-calendar-time"></i>Конструктор расписания</div>'
+    + '<div class="seg"><span>Помощник</span><span class="on">Конструктор</span></div><div class="sp"></div>'
+    + '<span class="chip">Школа №12</span><span class="chip">Oʻzbekcha</span><span class="chip"><i class="ti ti-dots"></i></span></div>'
+    + '<div class="body"><div class="side">'
+    + '<div class="grp">Данные школы</div>'
+    + nav("building","Школа и правила",'<span class="b ok">✓</span>')
+    + nav("users-group","Классы",'<span class="n">50</span>')
+    + nav("user","Учителя",'<span class="n">85</span>')
+    + nav("book","Предметы",'<span class="n">131</span>')
+    + nav("door","Кабинеты",'<span class="n">57</span>')
+    + nav("list-numbers","Нагрузка",'<span class="b w">3</span>')
+    + '<div class="grp">Расписание</div>'
+    + nav("shield-check","Проверка",'<span class="b w">49</span>')
+    + nav("table","Сетка","",true)
+    + nav("arrow-back-up","Перенос в eMaktab",'<span class="n">12</span>')
+    + nav("printer","Печать и Excel")
+    + '<div class="sep"></div>' + nav("upload","Загрузить из eMaktab")
+    + '</div><div class="main">'
+    + '<div class="ph"><div><h3>Сетка</h3><p>Расписание по классам. Уроки можно менять местами перетаскиванием.</p></div><div class="sp"></div>'
+    + '<span class="btn"><i class="ti ti-user"></i>По учителям</span><span class="btn pri"><i class="ti ti-refresh"></i>Перестроить</span></div>'
+    + '<div class="tiles">'
+    + '<div class="tile t-ok"><div class="ic"><i class="ti ti-circle-check"></i></div><div><div class="v">0</div><div class="l">конфликтов учителей</div></div></div>'
+    + '<div class="tile t-w"><div class="ic"><i class="ti ti-alert-triangle"></i></div><div><div class="v">49</div><div class="l">окон у классов</div></div></div>'
+    + '<div class="tile t-ok"><div class="ic"><i class="ti ti-checklist"></i></div><div><div class="v">3 из 3</div><div class="l">правил школы выполнено</div></div></div>'
+    + '<div class="tile t-ok"><div class="ic"><i class="ti ti-circle-check"></i></div><div><div class="v">0</div><div class="l">уроков не размещено</div></div></div>'
+    + '</div>'
+    + '<div class="bar"><span style="font-size:12.5px;color:var(--ink-soft);font-weight:600">7 класс:</span>'
+    + '<span class="cls on">7-A</span><span class="cls">7-B</span><span class="cls">7-E</span><span class="cls">7-V</span><div class="sp"></div><span class="link">Все классы ▾</span></div>'
+    + '<table class="g"><thead><tr><th class="n"></th>' + DAYS.map(function(d){ return "<th>"+d+"</th>"; }).join("") + '</tr></thead><tbody>';
+  GRID.forEach(function(row, r){ h += '<tr><td class="n">'+(r+1)+'</td>' + row.map(function(c, d){ return "<td>"+cell(c, r, d)+"</td>"; }).join("") + '</tr>'; });
+  h += '</tbody></table><div class="note"><i class="ti ti-lock"></i>Закреплённый урок не сдвинется при перестроении. Нажмите на урок, чтобы заменить учителя или кабинет.</div></div></div></div>';
+  return h;
+}
+function bot(){
+  return '<div class="bot"><div class="bt"><div class="logo" style="font-size:14px"><i class="ti ti-sparkles"></i>Помощник</div><div class="sp" style="flex:1"></div><span class="link" style="font-size:12.5px">Выйти в конструктор</span></div>'
+    + '<div class="steps"><span class="d done">1 Загрузка</span><i class="ti ti-chevron-right"></i><span class="d done">2 Правила</span><i class="ti ti-chevron-right"></i><span class="d on">3 Результат</span></div>'
+    + '<div class="bb"><h4>Проверила ваше расписание</h4><p class="lead">Школа №12 · 50 классов · 85 учителей · неделя 14–20 сентября</p>'
+    + '<div class="kpi"><div><b>0</b><span>конфликтов</span></div><div class="w"><b>49</b><span>окон у классов</span></div><div><b>3/3</b><span>правил школы</span></div></div>'
+    + '<ul class="prob"><li><i class="ti ti-alert-triangle"></i><span>Больше всего окон — в 5-G и 8-E (по 6)</span></li>'
+    + '<li><i class="ti ti-alert-triangle"></i><span>В 6 классах нет «Kelajak soati» в понедельник</span></li>'
+    + '<li><i class="ti ti-alert-triangle"></i><span>2 кабинета заняты двумя классами одновременно</span></li></ul>'
+    + '<div class="acts"><span class="btn pri"><i class="ti ti-table"></i>Открыть сетку</span><span class="btn"><i class="ti ti-arrow-back-up"></i>Перенести в eMaktab</span></div></div></div>';
+}
+document.querySelectorAll(".mount-app").forEach(function(m){ m.innerHTML = app(); });
+document.querySelectorAll(".mount-bot").forEach(function(m){ m.innerHTML = bot(); });
+</script>
+</body>
+</html>
